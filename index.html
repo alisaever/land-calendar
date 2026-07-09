@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>东北三城土地日历</title>
+<meta name="description" content="沈阳·大连·长春 住宅/商住/法拍土地信息追踪">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="土地日历">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a1a2e' width='100' height='100' rx='20'/><text x='50' y='65' text-anchor='middle' fill='white' font-size='48'>🏙️</text></svg>">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+/* ===== 全局变量与重置 ===== */
+:root {
+  --shenyang: #C0392B; --shenyang-light: #FADBD8;
+  --dalian:   #2471A3; --dalian-light:   #D6EAF8;
+  --changchun:#1E8449; --changchun-light: #D5F5E3;
+  --listing:  #2980B9; --listing-light:  #D6EAF8;
+  --deal:     #27AE60; --deal-light:     #D5F5E3;
+  --pending:  #D4AC0D; --pending-light:  #FCF3CF;
+  --alert:    #E74C3C; --alert-light:    #FADBD8;
+  --auction:  #E67E22; --auction-light:  #FDEBD0;
+  --today-bg: #FFF9C4;
+  --bg:       #F5F6FA;
+  --card:     #FFFFFF;
+  --text:     #2C3E50;
+  --text-secondary: #7F8C8D;
+  --border:   #E1E4E8;
+  --shadow:   0 2px 12px rgba(0,0,0,0.08);
+  --radius:   12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+}
+/* ===== 头部 ===== */
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+  color: #fff; padding: 20px 32px; text-align: center;
+}
+.header h1 { font-size: 26px; font-weight: 700; letter-spacing: 2px; }
+.header .subtitle { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+
+/* ===== 布局 ===== */
+.container { max-width: 1300px; margin: 0 auto; padding: 20px; display: flex; gap: 20px; }
+.main-panel { flex: 1; min-width: 0; }
+.side-panel { width: 380px; flex-shrink: 0; }
+
+/* ===== 工具栏 ===== */
+.toolbar {
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 16px 20px; margin-bottom: 16px; display: flex; gap: 12px;
+  align-items: center; flex-wrap: wrap;
+}
+.city-tabs { display: flex; gap: 4px; }
+.city-tab {
+  padding: 8px 20px; border-radius: 20px; border: 2px solid var(--border);
+  background: #fff; cursor: pointer; font-size: 14px; font-weight: 600;
+  transition: all 0.2s; color: var(--text);
+}
+.city-tab:hover { border-color: #888; }
+.city-tab.active { color: #fff; border-color: transparent; }
+.city-tab[data-city="全部"].active { background: #555; border-color: #555; }
+.city-tab[data-city="沈阳"].active { background: var(--shenyang); }
+.city-tab[data-city="大连"].active { background: var(--dalian); }
+.city-tab[data-city="长春"].active { background: var(--changchun); }
+
+.search-box {
+  flex: 1; min-width: 200px; position: relative;
+}
+.search-box input {
+  width: 100%; padding: 9px 14px 9px 36px; border-radius: 20px;
+  border: 2px solid var(--border); font-size: 14px; outline: none; transition: 0.2s;
+}
+.search-box input:focus { border-color: #888; }
+.search-box .search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: #999; font-size: 16px; pointer-events: none;
+}
+.search-results {
+  position: absolute; top: 44px; left: 0; right: 0; background: #fff;
+  border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); z-index: 100;
+  max-height: 260px; overflow-y: auto; display: none;
+}
+.search-results.show { display: block; }
+.search-result-item {
+  padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f0f0f0;
+  font-size: 13px; transition: 0.15s;
+}
+.search-result-item:hover { background: #f5f7fa; }
+.search-result-item .sr-date { font-weight: 600; color: #888; margin-right: 8px; }
+.search-result-item .sr-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600; color: #fff; margin-right: 6px;
+}
+
+.data-actions { display: flex; gap: 8px; }
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-outline { background: #fff; border: 1.5px solid var(--border); color: var(--text); }
+.btn-outline:hover { background: #f5f5f5; }
+.btn-primary { background: #2C3E50; color: #fff; }
+.btn-primary:hover { background: #1a252f; }
+.btn-danger { background: #fff; border: 1.5px solid #E74C3C; color: #E74C3C; }
+.btn-danger:hover { background: #FDEDEC; }
+
+/* ===== 日历 ===== */
+.calendar-card {
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.calendar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+}
+.calendar-header .month-label { font-size: 20px; font-weight: 700; }
+.calendar-header .nav-btns { display: flex; gap: 8px; }
+.calendar-header .nav-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: #fff; cursor: pointer; font-size: 18px; display: flex;
+  align-items: center; justify-content: center; transition: 0.2s; color: var(--text);
+}
+.calendar-header .nav-btn:hover { background: #f0f0f0; }
+.today-btn {
+  padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s;
+}
+.today-btn:hover { background: #f0f0f0; }
+
+.weekday-row {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  padding: 10px 0; background: #fafbfc; border-bottom: 1px solid var(--border);
+}
+.weekday-row span { text-align: center; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.weekend { color: #E74C3C !important; }
+
+.calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 8px;
+}
+.calendar-cell {
+  aspect-ratio: 1; padding: 6px; border-radius: 8px; cursor: pointer;
+  transition: 0.15s; position: relative; border: 2px solid transparent;
+  display: flex; flex-direction: column; min-height: 90px;
+}
+.calendar-cell:hover { background: #f5f7fa; }
+.calendar-cell.other-month { opacity: 0.3; pointer-events: none; }
+.calendar-cell.today { border-color: #F39C12; background: var(--today-bg); }
+.calendar-cell.selected { border-color: #2C3E50; background: #f0f3f7; }
+.calendar-cell.alert-day {
+  animation: pulse-border 1.5s ease-in-out infinite;
+}
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--alert); box-shadow: 0 0 0 0 rgba(231,76,60,0.4); }
+  50%      { border-color: var(--alert); box-shadow: 0 0 0 6px rgba(231,76,60,0); }
+}
+.day-number { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.event-badges { display: flex; flex-wrap: wrap; gap: 2px; overflow: hidden; }
+.badge {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 600;
+  color: #fff; white-space: nowrap; max-width: 100%;
+}
+.badge-listing { background: var(--listing); }
+.badge-deal { background: var(--deal); }
+.badge-pending { background: var(--pending); }
+.badge-auction { background: var(--auction); }
+.badge-alert {
+  background: var(--alert); animation: pulse-badge 1s ease-in-out infinite;
+}
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+.calendar-cell .city-dots { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; }
+.city-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.city-dot.sy { background: var(--shenyang); }
+.city-dot.dl { background: var(--dalian); }
+.city-dot.cc { background: var(--changchun); }
+
+/* ===== 侧边栏 ===== */
+.detail-card {
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px; margin-bottom: 16px;
+}
+.detail-card h3 { font-size: 16px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.detail-card .date-label { font-size: 13px; color: var(--text-secondary); font-weight: 400; }
+
+.event-item {
+  padding: 12px; border-radius: 10px; margin-bottom: 10px;
+  border-left: 4px solid #ccc; background: #fafbfc; transition: 0.15s;
+}
+.event-item:hover { background: #f0f3f7; }
+.event-item.shenyang { border-left-color: var(--shenyang); }
+.event-item.dalian   { border-left-color: var(--dalian); }
+.event-item.changchun{ border-left-color: var(--changchun); }
+.event-item .ev-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.event-item .ev-name { font-weight: 700; font-size: 14px; }
+.event-item .ev-tags { display: flex; gap: 4px; flex-shrink: 0; margin-left: 8px; }
+.event-item .ev-tag {
+  padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; color: #fff;
+}
+.tag-listing  { background: var(--listing); }
+.tag-deal     { background: var(--deal); }
+.tag-pending  { background: var(--pending); }
+.tag-auction  { background: var(--auction); }
+.event-item .ev-detail { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+.event-item .ev-actions { margin-top: 8px; display: flex; gap: 6px; }
+.btn-sm {
+  padding: 4px 12px; border-radius: 6px; border: 1px solid var(--border);
+  background: #fff; cursor: pointer; font-size: 12px; transition: 0.15s;
+}
+.btn-sm:hover { background: #f0f0f0; }
+.btn-sm.danger { color: #E74C3C; border-color: #E74C3C; }
+.btn-sm.danger:hover { background: #FDEDEC; }
+
+.empty-state { text-align: center; padding: 30px 0; color: var(--text-secondary); font-size: 14px; }
+.empty-state .icon { font-size: 40px; margin-bottom: 8px; }
+
+.add-event-btn {
+  width: 100%; padding: 12px; border-radius: 10px; border: 2px dashed var(--border);
+  background: transparent; cursor: pointer; font-size: 14px; color: var(--text-secondary);
+  transition: 0.2s; font-weight: 600;
+}
+.add-event-btn:hover { border-color: #888; color: #333; background: #fafbfc; }
+
+/* ===== 弹窗 ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; display: none;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; padding: 28px; width: 520px;
+  max-width: 95vw; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.modal h3 { font-size: 18px; margin-bottom: 20px; }
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text);
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--border);
+  font-size: 14px; outline: none; transition: 0.2s; font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus { border-color: #888; }
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+/* ===== 提醒弹窗 ===== */
+.reminder-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000;
+  display: flex; align-items: center; justify-content: center; display: none;
+}
+.reminder-overlay.show { display: flex; }
+.reminder-modal {
+  background: #fff; border-radius: 16px; padding: 28px; width: 480px;
+  max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  border-top: 5px solid var(--alert);
+}
+.reminder-modal h3 { font-size: 18px; color: var(--alert); display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.reminder-modal .rem-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
+.reminder-event {
+  padding: 10px 14px; border-radius: 8px; background: var(--alert-light);
+  margin-bottom: 8px; font-size: 14px; font-weight: 600;
+}
+.reminder-modal .btn { width: 100%; justify-content: center; margin-top: 16px; }
+
+/* ===== 统计表格 ===== */
+	.stats-section { margin-bottom: 16px; }
+	.stats-section-title {
+	  font-size: 13px; font-weight: 700; margin-bottom: 8px;
+	  display: flex; align-items: center; gap: 6px;
+	}
+	.stats-table {
+	  width: 100%; border-collapse: collapse; font-size: 12px;
+	  margin-bottom: 4px;
+	}
+	.stats-table th {
+	  background: #f5f7fa; padding: 6px 4px; text-align: center;
+	  font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border);
+	}
+	.stats-table th:first-child { text-align: left; padding-left: 8px; }
+	.stats-table td {
+	  padding: 4px; text-align: center; border-bottom: 1px solid #f0f0f0;
+	}
+	.stats-table td:first-child { text-align: left; padding-left: 8px; font-weight: 600; }
+	.stats-table td:last-child { font-weight: 700; }
+	.stats-table .num { text-align: right; padding-right: 6px; }
+	.stats-table .total-row { background: #fafbfc; font-weight: 700; }
+	.stats-table .total-row td { border-top: 1.5px solid var(--border); }
+	.stats-table .city-dot-sm {
+	  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+	  margin-right: 4px; vertical-align: middle;
+	}
+	.stats-table .dot-sy { background: var(--shenyang); }
+	.stats-table .dot-dl { background: var(--dalian); }
+	.stats-table .dot-cc { background: var(--changchun); }
+	.stats-note { font-size: 11px; color: #999; margin-top: 4px; }
+
+	/* ===== 移动端底部导航 ===== */
+	.mobile-nav {
+	  display: none;
+	  position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+	  background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
+	  -webkit-backdrop-filter: blur(10px);
+	  justify-content: space-around; align-items: center;
+	  padding: 8px 0; padding-bottom: max(8px, env(safe-area-inset-bottom));
+	}
+	.mobile-nav-btn {
+	  display: flex; flex-direction: column; align-items: center; gap: 2px;
+	  background: none; border: none; color: rgba(255,255,255,0.7);
+	  cursor: pointer; padding: 6px 20px; border-radius: 12px;
+	  transition: 0.2s; font-size: 12px; min-width: 60px;
+	}
+	.mobile-nav-btn:active { background: rgba(255,255,255,0.15); }
+	.mobile-nav-btn .mobile-nav-icon { font-size: 22px; }
+	.mobile-nav-btn .mobile-nav-label { font-size: 11px; }
+	.mobile-nav-btn.today { color: #F39C12; }
+
+	/* ===== 移动端响应式 ===== */
+@media (max-width: 900px) {
+  .container { flex-direction: column; }
+  .side-panel { width: 100%; }
+  .calendar-cell { min-height: 60px; }
+  .day-number { font-size: 12px; }
+  .badge { font-size: 9px; padding: 1px 4px; }
+  .stats-table { font-size: 11px; }
+  .stats-table th, .stats-table td { padding: 3px 2px; }
+  .header { padding: 14px 16px; }
+  .header h1 { font-size: 20px; }
+  .toolbar { padding: 10px 12px; gap: 8px; }
+}
+
+/* 手机竖屏 */
+@media (max-width: 600px) {
+  body { font-size: 14px; padding-bottom: 70px; }
+  .mobile-nav { display: flex; }
+  .header { padding: 12px 14px; }
+  .header h1 { font-size: 18px; letter-spacing: 1px; }
+  .header .subtitle { font-size: 11px; }
+  .container { padding: 8px; gap: 10px; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .city-tabs { justify-content: center; }
+  .city-tab { padding: 8px 14px; font-size: 13px; }
+  .search-box { min-width: 0; }
+  .data-actions { justify-content: center; flex-wrap: wrap; }
+  .data-actions .btn { font-size: 12px; padding: 7px 10px; }
+  .calendar-card .calendar-header { padding: 10px 12px; }
+  .calendar-card .month-label { font-size: 16px; }
+  .calendar-grid { padding: 2px; gap: 1px; }
+  .calendar-cell { min-height: 50px; padding: 3px; }
+  .day-number { font-size: 11px; }
+  .badge { font-size: 8px; padding: 1px 3px; border-radius: 6px; }
+  .city-dot { width: 5px; height: 5px; }
+  .weekday-row span { font-size: 11px; }
+  .nav-btn, .today-btn { min-width: 36px; min-height: 36px; }
+  .modal { width: 100vw; max-width: 100vw; border-radius: 16px 16px 0 0; position: fixed; bottom: 0; left: 0; max-height: 90vh; }
+  .modal-actions { flex-direction: column; }
+  .modal-actions .btn { width: 100%; justify-content: center; padding: 12px; }
+  .detail-card { padding: 14px; margin-bottom: 10px; }
+  .event-item { padding: 10px; }
+  .stats-table { font-size: 10px; }
+  .stats-table th, .stats-table td { padding: 2px 1px; }
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 头部 ===== -->
+<div class="header">
+  <h1>🏙️ 东北三城土地市场日历</h1>
+  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖</div>
+</div>
+
+<!-- ===== 主布局 ===== -->
+<div class="container">
+  <!-- 主面板 -->
+  <div class="main-panel">
+    <!-- 工具栏 -->
+    <div class="toolbar">
+      <div class="city-tabs" id="cityTabs">
+        <button class="city-tab active" data-city="全部">全部</button>
+        <button class="city-tab" data-city="沈阳">沈阳</button>
+        <button class="city-tab" data-city="大连">大连</button>
+        <button class="city-tab" data-city="长春">长春</button>
+      </div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="搜索地块名称 / 编号 / 区域...">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <div class="data-actions">
+        <button class="btn btn-outline" onclick="exportData()" title="导出JSON">📥 导出</button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" title="导入JSON">📤 导入</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        <button class="btn btn-outline" onclick="loadDemoData()" title="刷新为最新真实数据">🔄 刷新数据</button>
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ 清空</button>
+      </div>
+    </div>
+
+    <!-- 日历 -->
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <div class="nav-btns">
+          <button class="nav-btn" onclick="prevMonth()">◀</button>
+          <button class="today-btn" onclick="goToday()">📅 今天</button>
+          <button class="nav-btn" onclick="nextMonth()">▶</button>
+        </div>
+        <div class="month-label" id="monthLabel">2026年 7月</div>
+        <div style="display:flex;gap:16px;align-items:center;font-size:12px;color:var(--text-secondary)">
+          <span>🔵 挂牌</span><span>🟢 已成交</span><span>🟡 待成交</span><span>🟠 法拍</span>
+        </div>
+      </div>
+      <div class="weekday-row">
+        <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span>
+        <span class="weekend">六</span><span class="weekend">日</span>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+  </div>
+
+  <!-- 侧边栏 -->
+  <div class="side-panel" id="sidePanel">
+    <div class="detail-card">
+      <h3>📋 <span id="detailDateLabel" class="date-label">选择日期查看详情</span></h3>
+      <div id="eventList"></div>
+      <button class="add-event-btn" id="addEventBtn" onclick="openAddModal()">+ 添加事件</button>
+    </div>
+
+    <!-- 本月统计 -->
+    <div class="detail-card">
+      <h3>📊 本月统计</h3>
+      <div id="monthStats" style="font-size:13px;color:var(--text-secondary)">加载中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 移动端底部导航栏 ===== -->
+<nav class="mobile-nav" id="mobileNav">
+  <button class="mobile-nav-btn" onclick="prevMonth()" title="上个月">
+    <span class="mobile-nav-icon">◀</span>
+  </button>
+  <button class="mobile-nav-btn today" onclick="goToday()" title="今天">
+    <span class="mobile-nav-icon">📅</span>
+    <span class="mobile-nav-label">今天</span>
+  </button>
+  <button class="mobile-nav-btn" onclick="nextMonth()" title="下个月">
+    <span class="mobile-nav-icon">▶</span>
+  </button>
+</nav>
+
+<!-- ===== 事件编辑弹窗 ===== -->
+<div class="modal-overlay" id="eventModal">
+  <div class="modal">
+    <h3 id="modalTitle">添加土地事件</h3>
+    <input type="hidden" id="eventId">
+    <div class="form-row">
+      <div class="form-group">
+        <label>城市 *</label>
+        <select id="evCity"><option value="沈阳">沈阳</option><option value="大连">大连</option><option value="长春">长春</option></select>
+      </div>
+      <div class="form-group">
+        <label>事件类型 *</label>
+        <select id="evType"><option value="挂牌">挂牌</option><option value="成交">成交</option><option value="待成交">待成交</option><option value="法拍">法拍</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>地块名称/编号 *</label>
+      <input type="text" id="evName" placeholder="例：HNG-2026-01">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>所在区域</label>
+        <input type="text" id="evDistrict" placeholder="例：浑南区">
+      </div>
+      <div class="form-group">
+        <label>日期 *</label>
+        <input type="date" id="evDate">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>土地面积 (m²)</label>
+        <input type="text" id="evArea" placeholder="例：85,000">
+      </div>
+      <div class="form-group">
+        <label>价格 (万元)</label>
+        <input type="text" id="evPrice" placeholder="例：125,000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>竞得人 / 意向方</label>
+      <input type="text" id="evBuyer" placeholder="例：XX房地产开发有限公司">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveEvent()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 提醒弹窗 ===== -->
+<div class="reminder-overlay" id="reminderOverlay">
+  <div class="reminder-modal">
+    <h3>⚠️ 明日土地成交提醒</h3>
+    <div class="rem-subtitle">以下地块将于明日成交，请重点关注：</div>
+    <div id="reminderList"></div>
+    <button class="btn btn-primary" onclick="closeReminder()">✅ 我知道了</button>
+  </div>
+</div>
+
+<script>
+// ===== 全局状态 =====
+const STORAGE_KEY = 'land_calendar_events';
+let events = [];
+let currentYear, currentMonth;
+let selectedDate = null;       // 'YYYY-MM-DD'
+let activeCity = '全部';
+
+// ===== 初始化 =====
+function init() {
+  loadEvents();
+  // 首次使用自动加载真实数据
+  if (events.length === 0) {
+    events = getRealData();
+    saveEvents();
+  }
+  const now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth() + 1;
+  selectedDate = formatDate(now);
+  renderAll();
+  checkReminder();
+  bindEvents();
+}
+
+function formatDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// ===== 事件绑定 =====
+function bindEvents() {
+  document.getElementById('cityTabs').addEventListener('click', e => {
+    if (e.target.classList.contains('city-tab')) {
+      document.querySelectorAll('.city-tab').forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      activeCity = e.target.dataset.city;
+      renderCalendar();
+      updateDetailPanel();
+      updateStats();
+    }
+  });
+
+  document.getElementById('searchInput').addEventListener('input', handleSearch);
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-box')) {
+      document.getElementById('searchResults').classList.remove('show');
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeModal();
+      closeReminder();
+    }
+  });
+}
+
+// ===== 数据持久化 =====
+function loadEvents() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    events = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    events = [];
+  }
+}
+
+function saveEvents() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+}
+
+// ===== 日历导航 =====
+function prevMonth() {
+  if (currentMonth === 1) { currentYear--; currentMonth = 12; }
+  else { currentMonth--; }
+  renderAll();
+}
+
+function nextMonth() {
+  if (currentMonth === 12) { currentYear++; currentMonth = 1; }
+  else { currentMonth++; }
+  renderAll();
+}
+
+function goToday() {
+  const now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth() + 1;
+  selectedDate = formatDate(now);
+  renderAll();
+}
+
+// ===== 日历渲染 =====
+function getFilteredEvents() {
+  if (activeCity === '全部') return events;
+  return events.filter(e => e.city === activeCity);
+}
+
+function getEventsByDate(dateStr) {
+  return getFilteredEvents().filter(e => e.date === dateStr);
+}
+
+function renderAll() {
+  renderCalendar();
+  updateDetailPanel();
+  updateStats();
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  document.getElementById('monthLabel').textContent = `${currentYear}年 ${currentMonth}月`;
+
+  const firstDay = new Date(currentYear, currentMonth - 1, 1);
+  const lastDay = new Date(currentYear, currentMonth, 0);
+  const totalDays = lastDay.getDate();
+  // 周一=0, 周日=6
+  let startDow = firstDay.getDay();
+  if (startDow === 0) startDow = 6; else startDow -= 1;
+
+  const todayStr = formatDate(new Date());
+  const tomorrowStr = formatDate(new Date(Date.now() + 86400000));
+  const filtered = getFilteredEvents();
+
+  // 预计算每日事件统计
+  const dayStats = {};
+  filtered.forEach(e => {
+    if (!dayStats[e.date]) dayStats[e.date] = { listing: 0, deal: 0, pending: 0, auction: 0, cities: new Set() };
+    if (e.type === '挂牌') dayStats[e.date].listing++;
+    else if (e.type === '法拍') dayStats[e.date].auction++;
+    else if (e.type === '待成交') dayStats[e.date].pending++;
+    else dayStats[e.date].deal++;
+    dayStats[e.date].cities.add(e.city);
+  });
+
+  // 检查明日成交（已成交 + 待成交）
+  const tomorrowDeals = filtered.filter(e => e.date === tomorrowStr && (e.type === '成交' || e.type === '待成交'));
+
+  let html = '';
+  let cellCount = 0;
+
+  // 填充上月空白格
+  const prevMonthLastDay = new Date(currentYear, currentMonth - 1, 0).getDate();
+  for (let i = startDow - 1; i >= 0; i--) {
+    const d = prevMonthLastDay - i;
+    html += `<div class="calendar-cell other-month"><span class="day-number">${d}</span></div>`;
+    cellCount++;
+  }
+
+  // 当月日期
+  for (let d = 1; d <= totalDays; d++) {
+    const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const stat = dayStats[dateStr] || { listing: 0, deal: 0, pending: 0, cities: new Set() };
+    const isToday = dateStr === todayStr;
+    const isSelected = dateStr === selectedDate;
+    const isAlert = tomorrowDeals.length > 0 && dateStr === tomorrowStr;
+
+    let classes = 'calendar-cell';
+    if (isToday) classes += ' today';
+    if (isSelected) classes += ' selected';
+    if (isAlert) classes += ' alert-day';
+
+    let badgesHtml = '';
+    if (stat.listing > 0) badgesHtml += `<span class="badge badge-listing">挂${stat.listing}</span>`;
+    if (stat.deal > 0) badgesHtml += `<span class="badge badge-deal">已成交${stat.deal}</span>`;
+    if (stat.pending > 0) badgesHtml += `<span class="badge badge-pending">待成交${stat.pending}</span>`;
+    if (stat.auction > 0) badgesHtml += `<span class="badge badge-auction">拍${stat.auction}</span>`;
+    if (isAlert) badgesHtml += `<span class="badge badge-alert">⚠明日成交</span>`;
+
+    let dotsHtml = '';
+    if (stat.cities.has('沈阳')) dotsHtml += '<span class="city-dot sy"></span>';
+    if (stat.cities.has('大连')) dotsHtml += '<span class="city-dot dl"></span>';
+    if (stat.cities.has('长春')) dotsHtml += '<span class="city-dot cc"></span>';
+
+    html += `
+      <div class="${classes}" data-date="${dateStr}" onclick="selectDate('${dateStr}')">
+        <span class="day-number">${d}</span>
+        <div class="event-badges">${badgesHtml}</div>
+        <div class="city-dots">${dotsHtml}</div>
+      </div>`;
+    cellCount++;
+  }
+
+  // 填充下月空白格
+  const remaining = (7 - (cellCount % 7)) % 7;
+  for (let d = 1; d <= remaining; d++) {
+    html += `<div class="calendar-cell other-month"><span class="day-number">${d}</span></div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+// ===== 日期选择 =====
+function selectDate(dateStr) {
+  selectedDate = dateStr;
+  document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selected'));
+  const cell = document.querySelector(`[data-date="${dateStr}"]`);
+  if (cell) cell.classList.add('selected');
+  updateDetailPanel();
+}
+
+// ===== 详情面板 =====
+function updateDetailPanel() {
+  const label = document.getElementById('detailDateLabel');
+  const list = document.getElementById('eventList');
+  const addBtn = document.getElementById('addEventBtn');
+
+  if (!selectedDate) {
+    label.textContent = '请点击日历选择日期';
+    list.innerHTML = '<div class="empty-state"><div class="icon">📅</div>点击日历上的日期查看事件</div>';
+    addBtn.style.display = 'none';
+    return;
+  }
+
+  label.textContent = selectedDate;
+  addBtn.style.display = 'block';
+  addBtn.onclick = () => openAddModal(selectedDate);
+
+  const dateEvents = events.filter(e => e.date === selectedDate);
+  // 应用城市筛选
+  const filtered = activeCity === '全部' ? dateEvents : dateEvents.filter(e => e.city === activeCity);
+
+  if (filtered.length === 0) {
+    let hint = '该日期暂无事件';
+    if (activeCity !== '全部') hint = `${activeCity}在该日期暂无事件`;
+    list.innerHTML = `<div class="empty-state"><div class="icon">📭</div>${hint}<br><small>点击下方按钮添加</small></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => `
+    <div class="event-item ${e.city === '沈阳' ? 'shenyang' : e.city === '大连' ? 'dalian' : 'changchun'}">
+      <div class="ev-header">
+        <span class="ev-name">${escHtml(e.name)}</span>
+        <div class="ev-tags">
+          <span class="ev-tag ${e.type === '挂牌' ? 'tag-listing' : e.type === '法拍' ? 'tag-auction' : e.type === '待成交' ? 'tag-pending' : 'tag-deal'}">${e.type}</span>
+        </div>
+      </div>
+      <div class="ev-detail">
+        🏙️ ${e.city} ${e.district ? '· ' + escHtml(e.district) : ''}<br>
+        📐 面积：${e.area || '-'} m²<br>
+        💰 ${e.type === '挂牌' || e.type === '待成交' ? '起始价' : e.type === '法拍' ? '起拍价' : '成交价'}：${e.price || '-'} 万元<br>
+        🏢 竞得人：${e.buyer || '-'}
+      </div>
+      <div class="ev-actions">
+        <button class="btn-sm" onclick="openEditModal('${e.id}')">✏️ 编辑</button>
+        <button class="btn-sm danger" onclick="deleteEvent('${e.id}')">🗑️ 删除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== 统计面板 =====
+function countByCityType(evs) {
+  const cities = ['沈阳','大连','长春'];
+  const types = ['挂牌','成交','待成交','法拍'];
+  const map = {};
+  cities.forEach(c => { map[c] = {}; types.forEach(t => { map[c][t] = 0; }); });
+  evs.forEach(e => {
+    if (map[e.city] && map[e.city][e.type] !== undefined) map[e.city][e.type]++;
+  });
+  return map;
+}
+
+function dotClass(city) {
+  return city === '沈阳' ? 'dot-sy' : city === '大连' ? 'dot-dl' : 'dot-cc';
+}
+
+function renderStatsTable(evs, showBuyerCol) {
+  const cities = ['沈阳','大连','长春'];
+  const types = ['挂牌','成交','待成交','法拍'];
+  const map = countByCityType(evs);
+  const totals = {};
+
+  let rows = '';
+  cities.forEach(c => {
+    let rowSum = 0;
+    let cells = `<td><span class="city-dot-sm ${dotClass(c)}"></span>${c}</td>`;
+    types.forEach(t => {
+      const v = map[c][t];
+      rowSum += v;
+      if (!totals[t]) totals[t] = 0;
+      totals[t] += v;
+      cells += `<td class="num">${v || '-'}</td>`;
+    });
+    cells += `<td class="num">${rowSum}</td>`;
+    rows += `<tr>${cells}</tr>`;
+  });
+
+  // 合计行
+  let totalSum = 0;
+  let totalCells = '<td style="font-weight:700">合计</td>';
+  types.forEach(t => {
+    const v = totals[t] || 0;
+    totalSum += v;
+    totalCells += `<td class="num" style="font-weight:700">${v || '-'}</td>`;
+  });
+  totalCells += `<td class="num" style="font-weight:700">${totalSum}</td>`;
+
+  return `
+    <table class="stats-table">
+      <thead><tr>
+        <th>城市</th>
+        <th>🔵挂牌</th>
+        <th>🟢已成交</th>
+        <th>🟡待成交</th>
+        <th>🟠法拍</th>
+        <th>计</th>
+      </tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="total-row">${totalCells}</tr>
+      </tbody>
+    </table>
+    <div style="font-size:11px;color:#999;margin-top:2px">共 ${totalSum} 条记录</div>
+  `;
+}
+
+function updateStats() {
+  const statsEl = document.getElementById('monthStats');
+  const evs = getFilteredEvents();
+  const ym = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+  const yp = `${currentYear}-`;
+  const monthEvs = evs.filter(e => e.date.startsWith(ym));
+  const yearEvs = evs.filter(e => e.date.startsWith(yp));
+
+  // 检查是否有上一年数据（如2025年12月）
+  const prevYearEvs = evs.filter(e => e.date < yp && (e.date.startsWith(String(currentYear-1)+'-12')));
+  const crossYearNote = prevYearEvs.length > 0
+    ? `<div class="stats-note">* 年累计不含${currentYear-1}年12月跨年数据（${prevYearEvs.length}条挂牌），加之总计${evs.length}条</div>`
+    : '';
+
+  statsEl.innerHTML = `
+    <div class="stats-section">
+      <div class="stats-section-title">📅 ${currentYear}年${currentMonth}月 明细</div>
+      ${monthEvs.length > 0 ? renderStatsTable(monthEvs) : '<div style="color:#999;font-size:13px;padding:8px 0">本月暂无事件</div>'}
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">📊 ${currentYear}年 累计</div>
+      ${renderStatsTable(yearEvs)}
+      ${crossYearNote}
+    </div>
+  `;
+}
+
+// ===== 事件CRUD =====
+function openAddModal(presetDate) {
+  document.getElementById('modalTitle').textContent = '添加土地事件';
+  document.getElementById('eventId').value = '';
+  document.getElementById('evCity').value = activeCity !== '全部' ? activeCity : '沈阳';
+  document.getElementById('evType').value = '挂牌';
+  document.getElementById('evName').value = '';
+  document.getElementById('evDistrict').value = '';
+  document.getElementById('evDate').value = presetDate || selectedDate || formatDate(new Date());
+  document.getElementById('evArea').value = '';
+  document.getElementById('evPrice').value = '';
+  document.getElementById('evBuyer').value = '';
+  document.getElementById('eventModal').classList.add('show');
+}
+
+function openEditModal(id) {
+  const e = events.find(ev => ev.id === id);
+  if (!e) return;
+  document.getElementById('modalTitle').textContent = '编辑土地事件';
+  document.getElementById('eventId').value = e.id;
+  document.getElementById('evCity').value = e.city;
+  document.getElementById('evType').value = e.type;
+  document.getElementById('evName').value = e.name;
+  document.getElementById('evDistrict').value = e.district || '';
+  document.getElementById('evDate').value = e.date;
+  document.getElementById('evArea').value = e.area || '';
+  document.getElementById('evPrice').value = e.price || '';
+  document.getElementById('evBuyer').value = e.buyer || '';
+  document.getElementById('eventModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('eventModal').classList.remove('show');
+}
+
+function saveEvent() {
+  const id = document.getElementById('eventId').value;
+  const city = document.getElementById('evCity').value;
+  const type = document.getElementById('evType').value;
+  const name = document.getElementById('evName').value.trim();
+  const district = document.getElementById('evDistrict').value.trim();
+  const date = document.getElementById('evDate').value;
+  const area = document.getElementById('evArea').value.trim();
+  const price = document.getElementById('evPrice').value.trim();
+  const buyer = document.getElementById('evBuyer').value.trim();
+
+  if (!name) { alert('请输入地块名称/编号'); return; }
+  if (!date) { alert('请选择日期'); return; }
+
+  const eventData = { city, type, name, district, date, area, price, buyer };
+
+  if (id) {
+    const idx = events.findIndex(e => e.id === id);
+    if (idx >= 0) { events[idx] = { ...events[idx], ...eventData }; }
+  } else {
+    events.push({ id: generateId(), ...eventData });
+  }
+
+  saveEvents();
+  closeModal();
+  if (date) selectDate(date);
+  renderCalendar();
+  updateStats();
+}
+
+function deleteEvent(id) {
+  if (!confirm('确认删除该事件？此操作不可恢复。')) return;
+  events = events.filter(e => e.id !== id);
+  saveEvents();
+  updateDetailPanel();
+  renderCalendar();
+  updateStats();
+}
+
+function generateId() {
+  return 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+// ===== 搜索 =====
+function handleSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const resultsEl = document.getElementById('searchResults');
+
+  if (q.length < 1) { resultsEl.classList.remove('show'); return; }
+
+  const filtered = getFilteredEvents().filter(e =>
+    e.name.toLowerCase().includes(q) ||
+    (e.district && e.district.toLowerCase().includes(q)) ||
+    (e.buyer && e.buyer.toLowerCase().includes(q))
+  );
+
+  if (filtered.length === 0) {
+    resultsEl.innerHTML = '<div style="padding:14px;color:#999;text-align:center">未找到匹配结果</div>';
+  } else {
+    resultsEl.innerHTML = filtered.slice(0, 20).map(e => {
+      const tagColor = e.type === '挂牌' ? 'var(--listing)' : e.type === '法拍' ? 'var(--auction)' : e.type === '待成交' ? 'var(--pending)' : 'var(--deal)';
+      return `
+        <div class="search-result-item" onclick="jumpToDate('${e.date}')">
+          <span class="sr-date">${e.date}</span>
+          <span class="sr-tag" style="background:${tagColor}">${e.type}</span>
+          <span>${escHtml(e.name)}</span>
+          <span style="color:#999;font-size:11px;margin-left:4px">${e.city} ${escHtml(e.district||'')}</span>
+        </div>`;
+    }).join('');
+  }
+  resultsEl.classList.add('show');
+}
+
+function jumpToDate(dateStr) {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchResults').classList.remove('show');
+  const parts = dateStr.split('-');
+  currentYear = parseInt(parts[0]);
+  currentMonth = parseInt(parts[1]);
+  selectedDate = dateStr;
+  renderAll();
+}
+
+// ===== 提醒系统 =====
+function checkReminder() {
+  const tomorrowStr = formatDate(new Date(Date.now() + 86400000));
+  const tomorrowDeals = events.filter(e => e.date === tomorrowStr && (e.type === '成交' || e.type === '待成交'));
+
+  if (tomorrowDeals.length === 0) return;
+
+  const listEl = document.getElementById('reminderList');
+  listEl.innerHTML = tomorrowDeals.map(e => `
+    <div class="reminder-event">
+      ${e.type === '待成交' ? '🟡' : '🟢'} ${e.city} · ${escHtml(e.name)}
+      ${e.district ? ' <small>(' + escHtml(e.district) + ')</small>' : ''}
+      ${e.price ? ' <small>— ' + escHtml(e.price) + ' 万元</small>' : ''}
+      ${e.type === '待成交' ? ' <br><small>状态：待成交（挂牌截止日）</small>' : ''}
+      ${e.buyer && e.type !== '待成交' ? ' <br><small>竞得人：' + escHtml(e.buyer) + '</small>' : ''}
+    </div>
+  `).join('');
+
+  document.getElementById('reminderOverlay').classList.add('show');
+}
+
+function closeReminder() {
+  document.getElementById('reminderOverlay').classList.remove('show');
+}
+
+// ===== 导入导出 =====
+function exportData() {
+  const blob = new Blob([JSON.stringify(events, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `land-calendar-backup-${formatDate(new Date())}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('格式错误');
+      const count = data.length;
+      // 合并去重
+      const existingIds = new Set(events.map(ev => ev.id));
+      const newItems = data.filter(item => item.id && !existingIds.has(item.id) && item.name && item.date);
+      events = [...events, ...newItems];
+      saveEvents();
+      renderAll();
+      alert(`成功导入 ${newItems.length} 条新记录（共 ${count} 条数据）`);
+    } catch (err) {
+      alert('导入失败：文件格式不正确，请使用之前导出的JSON文件。');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ 确认清空所有土地事件数据？\n\n此操作不可恢复，建议先导出备份。')) return;
+  if (!confirm('再次确认：真的要清空全部数据吗？')) return;
+  events = [];
+  saveEvents();
+  renderAll();
+}
+
+// ===== 真实数据（仅住宅/商住/法拍 | 逐条核实竞得人、面积、日期 | 数据采集日：2026-07-09） =====
+function getRealData() {
+  // 来源：landchina.mnr.gov.cn / zrzyj.shenyang.gov.cn / ggzyjy.dl.gov.cn / www.ccggzy.com.cn
+  const rawData = [
+    // ========== 沈阳 ==========
+    // --- 北陵农场三期（沈土挂[2025]13号·公告12/26）---
+    { city:'沈阳',type:'挂牌',name:'北陵农场三期 SYTJ202504004',district:'皇姑区',area:'20,429',price:'17,399（起始）',buyer:'',date:'2025-12-26' },
+    { city:'沈阳',type:'成交',name:'北陵农场三期 SYTJ202504004（开年首拍）',district:'皇姑区',area:'20,429',price:'17,399',buyer:'皇姑区首府科创城市建设置业',date:'2026-01-15' },
+    // --- 蒲丰路南（沈土挂[2026]1号·公告2/18）---
+    { city:'沈阳',type:'挂牌',name:'蒲丰路南-1',district:'沈北新区',area:'29,020',price:'9,432（起始）',buyer:'',date:'2026-02-18' },
+    { city:'沈阳',type:'成交',name:'蒲丰路南-1',district:'沈北新区',area:'29,020',price:'9,432',buyer:'沈阳大溥房地产开发有限公司',date:'2026-03-10' },
+    { city:'沈阳',type:'挂牌',name:'蒲丰路南-3',district:'沈北新区',area:'49,635',price:'16,131（起始）',buyer:'',date:'2026-02-18' },
+    { city:'沈阳',type:'成交',name:'蒲丰路南-3',district:'沈北新区',area:'49,635',price:'16,131',buyer:'沈阳大溥房地产开发有限公司',date:'2026-03-10' },
+    // --- 富民南街/中储·华润（沈土挂[2026]2号·公告2/26）---
+    { city:'沈阳',type:'挂牌',name:'富民南街11号-1（中储组团）',district:'浑南区',area:'140,156',price:'111,003（起始）',buyer:'',date:'2026-02-26' },
+    { city:'沈阳',type:'成交',name:'富民南街11号-1（中储组团·华润）',district:'浑南区',area:'140,156',price:'111,003',buyer:'华润置地',date:'2026-03-18' },
+    { city:'沈阳',type:'挂牌',name:'富民南街11号-3（中储组团）',district:'浑南区',area:'115,531',price:'100,599（起始）',buyer:'',date:'2026-02-26' },
+    { city:'沈阳',type:'成交',name:'富民南街11号-3（中储组团·华润）',district:'浑南区',area:'115,531',price:'100,599',buyer:'华润置地',date:'2026-03-18' },
+    { city:'沈阳',type:'挂牌',name:'富民南街11号-4（中储组团）',district:'浑南区',area:'77,709',price:'85,977（起始）',buyer:'',date:'2026-02-26' },
+    { city:'沈阳',type:'成交',name:'富民南街11号-4（中储组团·华润）',district:'浑南区',area:'77,709',price:'85,977',buyer:'华润置地',date:'2026-03-18' },
+    // --- 于洪新城（沈土挂[2026]4号·公告4/16）---
+    { city:'沈阳',type:'挂牌',name:'于洪新城75-2号',district:'于洪区',area:'42,736',price:'24,174（起始）',buyer:'',date:'2026-04-16' },
+    { city:'沈阳',type:'成交',name:'于洪新城75-2号',district:'于洪区',area:'42,736',price:'24,174',buyer:'沈阳新东升房地产开发有限公司',date:'2026-05-06' },
+    // --- 铁路机校（沈土挂[2026]5号·公告5/5）---
+    { city:'沈阳',type:'挂牌',name:'铁路机校 SYTJ202604002',district:'皇姑区',area:'86,246',price:'115,501（起始）',buyer:'',date:'2026-05-05' },
+    { city:'沈阳',type:'成交',name:'铁路机校 SYTJ202604002【地铁TOD】',district:'皇姑区',area:'86,246',price:'115,501',buyer:'沈阳地铁晨瑞项目管理有限公司',date:'2026-05-25' },
+    // --- 沈抚（沈抚网挂[2026]3号·公告5/12）---
+    { city:'沈阳',type:'挂牌',name:'SF-WJ-01-B 沈抚示范区',district:'浑南区',area:'55,231',price:'15,754（起始）',buyer:'',date:'2026-05-12' },
+    { city:'沈阳',type:'成交',name:'SF-WJ-01-B 沈抚示范区（四代住宅）',district:'浑南区',area:'55,231',price:'15,754',buyer:'辽宁沈抚方大置业有限公司',date:'2026-06-01' },
+    // --- 永安路北（京东司法拍卖·无法挂牌）---
+    { city:'沈阳',type:'成交',name:'和平区永安路北地块（原丽阳广场·十年断供破局）',district:'和平区',area:'~7,400',price:'（未公开披露）',buyer:'新世纪集团',date:'2026-07-02' },
+    // --- 沈阳 正在挂牌 ---
+    { city:'沈阳',type:'挂牌',name:'SYTJ202604001 澜沧江街西-1',district:'皇姑区',area:'20,098',price:'14,836（起始）',buyer:'',date:'2026-06-20' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202603001 北一东路63号【拍卖出让】',district:'铁西区',area:'5,071',price:'6,839（起始）',buyer:'',date:'2026-07-02' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202606009 沈本大街西白塔河二路南-1号',district:'浑南区',area:'约132,405',price:'（待公布）',buyer:'',date:'2026-07-04' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'（待7/14公布）',price:'（待公布）',buyer:'',date:'2026-07-09' },
+    // --- 沈阳 待成交（截止日） ---
+    { city:'沈阳',type:'待成交',name:'SYTJ202604001 澜沧江街西-1',district:'皇姑区',area:'20,098',price:'14,836（起始）',buyer:'待结果',date:'2026-07-10' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202603001 北一东路63号【拍卖出让】',district:'铁西区',area:'5,071',price:'6,839（起始）',buyer:'待结果',date:'2026-07-22' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202606009 沈本大街西白塔河二路南-1号',district:'浑南区',area:'约132,405',price:'（待公布）',buyer:'待结果',date:'2026-07-24' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'（待7/14公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
+
+    // ========== 大连 ==========
+    // --- 马栏啤酒厂（公告12/20）---
+    { city:'大连',type:'挂牌',name:'大城(2025)-12号 马栏啤酒厂地块',district:'沙河口区',area:'99,212',price:'73,666（起始）',buyer:'',date:'2025-12-20' },
+    { city:'大连',type:'成交',name:'大城(2025)-12号 马栏啤酒厂地块',district:'沙河口区',area:'99,212',price:'73,666',buyer:'保利(大连)+沈阳金地恒耀',date:'2026-01-09' },
+    // --- 泉水河三宗（2025年第96号·12/29公告·1/8挂牌）---
+    { city:'大连',type:'挂牌',name:'大城(2025)-14号 泉水河B4区',district:'甘井子区',area:'15,660',price:'13,819（起始）',buyer:'',date:'2026-01-08' },
+    { city:'大连',type:'成交',name:'大城(2025)-14号 泉水河B4区',district:'甘井子区',area:'15,660',price:'13,819',buyer:'润盛隆（辽宁）置业有限公司',date:'2026-01-28' },
+    { city:'大连',type:'挂牌',name:'大城(2025)-15号 泉水河B6区',district:'甘井子区',area:'24,953',price:'17,624（起始）',buyer:'',date:'2026-01-08' },
+    { city:'大连',type:'成交',name:'大城(2025)-15号 泉水河B6区',district:'甘井子区',area:'24,953',price:'17,624',buyer:'辽宁日升地产有限公司',date:'2026-01-28' },
+    { city:'大连',type:'挂牌',name:'大城(2025)-16号 泉水河',district:'甘井子区',area:'14,711',price:'10,356（起始）',buyer:'',date:'2026-01-08' },
+    { city:'大连',type:'成交',name:'大城(2025)-16号 泉水河（溢价9.66%）',district:'甘井子区',area:'14,711',price:'11,356',buyer:'大连凌川置业有限公司',date:'2026-01-28' },
+    // --- 泉水河B2（2026年第6号·2/4公告·2/14挂牌）---
+    { city:'大连',type:'挂牌',name:'大城(2026)-1号 泉水河B2区',district:'甘井子区',area:'12,514',price:'11,422（起始）',buyer:'',date:'2026-02-14' },
+    { city:'大连',type:'成交',name:'大城(2026)-1号 泉水河B2区',district:'甘井子区',area:'12,514',price:'11,422',buyer:'辽宁日升地产有限公司',date:'2026-03-06' },
+    // --- 营城子（2026年第17号·3月公告·3/28挂牌）---
+    { city:'大连',type:'挂牌',name:'大甘(2026)-1号 营城子',district:'甘井子区',area:'55,067',price:'11,539（起始）',buyer:'',date:'2026-03-28' },
+    { city:'大连',type:'成交',name:'大甘(2026)-1号 营城子',district:'甘井子区',area:'55,067',price:'11,539',buyer:'大连甘城房地产开发有限公司',date:'2026-04-17' },
+    // --- 棉麻厂+黄山路（公告5/9）---
+    { city:'大连',type:'挂牌',name:'大城(2026)-7号 棉麻厂地块',district:'甘井子区',area:'45,662',price:'35,004（起始）',buyer:'',date:'2026-05-09' },
+    { city:'大连',type:'成交',name:'大城(2026)-7号 棉麻厂地块【龙湖重返大连】',district:'甘井子区',area:'45,662',price:'35,004',buyer:'龙湖地产',date:'2026-05-29' },
+    { city:'大连',type:'挂牌',name:'大城(2026)-5号 黄山路东侧',district:'甘井子区',area:'5,028',price:'6,693（起始）',buyer:'',date:'2026-05-09' },
+    { city:'大连',type:'成交',name:'大城(2026)-5号 黄山路东侧',district:'甘井子区',area:'5,028',price:'6,693',buyer:'中森国际养老产业有限公司',date:'2026-05-29' },
+    // --- 天丰街（2026年第33号·5/25公告·6/5挂牌）---
+    { city:'大连',type:'挂牌',name:'大城(2026)-3号 天丰街',district:'沙河口区',area:'20,007',price:'23,679（起始）',buyer:'',date:'2026-06-05' },
+    { city:'大连',type:'成交',name:'大城(2026)-3号 天丰街（绿城新作）',district:'沙河口区',area:'20,007',price:'23,679',buyer:'大连绿城置业有限公司',date:'2026-06-25' },
+    // --- 大连 正在挂牌 ---
+    { city:'大连',type:'挂牌',name:'大城(2026)-8号【捆绑出让①】',district:'大连市区',area:'约33,200（合计）',price:'25,900（起始）',buyer:'',date:'2026-06-25' },
+    { city:'大连',type:'挂牌',name:'大城(2026)-9号【捆绑出让②】',district:'大连市区',area:'（合计）',price:'37,700（起始）',buyer:'',date:'2026-06-25' },
+    { city:'大连',type:'挂牌',name:'大甘(2026)-5号 美林园北侧【捆绑①·7/3公告】',district:'甘井子区',area:'30,255',price:'保证金4,424',buyer:'',date:'2026-07-03' },
+    { city:'大连',type:'挂牌',name:'大甘(2026)-6号 美林园北侧【捆绑②·7/3公告】',district:'甘井子区',area:'46,128',price:'保证金6,824',buyer:'',date:'2026-07-03' },
+    { city:'大连',type:'挂牌',name:'大普(2026)-3号 太平街道（住宅+商务金融）',district:'普兰店区',area:'10,052',price:'2,467（起始）',buyer:'',date:'2026-07-07' },
+    { city:'大连',type:'挂牌',name:'大城(2026)-10号 东港K03-1（恒大商改住·7/7公告）',district:'中山区',area:'7,478',price:'保证金8,450',buyer:'',date:'2026-07-07' },
+    // --- 大连 待成交（截止日） ---
+    { city:'大连',type:'待成交',name:'大城(2026)-8号【捆绑出让①】',district:'大连市区',area:'约33,200（合计）',price:'25,900（起始）',buyer:'待结果',date:'2026-07-15' },
+    { city:'大连',type:'待成交',name:'大城(2026)-9号【捆绑出让②】',district:'大连市区',area:'（合计）',price:'37,700（起始）',buyer:'待结果',date:'2026-07-15' },
+    { city:'大连',type:'待成交',name:'大甘(2026)-5号 美林园北侧【捆绑①】',district:'甘井子区',area:'30,255',price:'保证金4,424',buyer:'待结果',date:'2026-08-05' },
+    { city:'大连',type:'待成交',name:'大甘(2026)-6号 美林园北侧【捆绑②】',district:'甘井子区',area:'46,128',price:'保证金6,824',buyer:'待结果',date:'2026-08-05' },
+    { city:'大连',type:'待成交',name:'大普(2026)-3号 太平街道（住宅+商务金融）',district:'普兰店区',area:'10,052',price:'2,467（起始）',buyer:'待结果',date:'2026-08-06' },
+    { city:'大连',type:'待成交',name:'大城(2026)-10号 东港K03-1（恒大商改住）',district:'中山区',area:'7,478',price:'保证金8,450',buyer:'待结果',date:'2026-08-07' },
+
+    // ========== 长春 ==========
+    // --- 宽城区九东路（公告1/22）---
+    { city:'长春',type:'挂牌',name:'宽城区九东路地块',district:'宽城区',area:'61,905',price:'30,953（起始）',buyer:'',date:'2026-01-22' },
+    { city:'长春',type:'成交',name:'宽城区九东路地块',district:'宽城区',area:'61,905',price:'30,953',buyer:'长春城投房地产开发有限公司',date:'2026-02-11' },
+    // --- 皓月大路棚改（长公资土挂[2026]6号/7号·公告2/14）---
+    { city:'长春',type:'挂牌',name:'皓月大路棚改① 润德雅居',district:'绿园区',area:'18,245',price:'22,715（起始）',buyer:'',date:'2026-02-14' },
+    { city:'长春',type:'成交',name:'皓月大路棚改① 润德雅居',district:'绿园区',area:'18,245',price:'22,715',buyer:'长春润德雅居房地产开发有限公司',date:'2026-03-06' },
+    { city:'长春',type:'挂牌',name:'皓月大路棚改②',district:'绿园区',area:'15,561',price:'16,666（起始）',buyer:'',date:'2026-02-14' },
+    { city:'长春',type:'成交',name:'皓月大路棚改②',district:'绿园区',area:'15,561',price:'16,666',buyer:'长春润德雅居房地产开发有限公司',date:'2026-03-06' },
+    // --- 净月法拍 ---
+    { city:'长春',type:'法拍',name:'净月区1559.80㎡土地+601㎡独栋别墅【二拍】',district:'净月区',area:'1,560',price:'578（起拍·5.6折）',buyer:'长春净月法院',date:'2026-03-13' },
+    // --- 莲花山（公告4/19）---
+    { city:'长春',type:'挂牌',name:'二道区莲花山地块',district:'二道区',area:'132,755',price:'7,185（起始）',buyer:'',date:'2026-04-19' },
+    { city:'长春',type:'成交',name:'二道区莲花山地块（低密别墅·容积率≤1.0）',district:'二道区',area:'132,755',price:'7,185',buyer:'吉林省建设集团有限公司',date:'2026-05-09' },
+    // --- 北湖区（长公资土挂[2026]16号·公告4/24）---
+    { city:'长春',type:'挂牌',name:'北湖区福源街/光机路',district:'北湖区',area:'44,154',price:'23,501（起始）',buyer:'',date:'2026-04-24' },
+    { city:'长春',type:'成交',name:'北湖区福源街/光机路',district:'北湖区',area:'44,154',price:'23,501',buyer:'长春新发城市建设置业有限公司',date:'2026-05-14' },
+    // --- 长春 正在挂牌 ---
+    { city:'长春',type:'挂牌',name:'长公资土挂[2026]31号 超凡大街（紧邻吉大尚德）',district:'高新区',area:'50,843',price:'30,971（起始）',buyer:'',date:'2026-06-26' },
+
+    // --- 长春 待成交（截止日） ---
+    { city:'长春',type:'待成交',name:'长公资土挂[2026]31号 超凡大街（紧邻吉大尚德）',district:'高新区',area:'50,843',price:'30,971（起始）',buyer:'待结果',date:'2026-07-16' },
+    { city:'长春',type:'待成交',name:'长公资土挂[2026]35号 北人民大街',district:'宽城区',area:'26,068',price:'13,809（起始）',buyer:'待结果',date:'2026-07-31' },
+    { city:'长春',type:'待成交',name:'长公资土挂[2026]36号 北环城路',district:'宽城区',area:'17,395',price:'楼面2,692元/㎡',buyer:'待结果',date:'2026-07-31' },
+  ];
+
+  return rawData.map(d => ({ id: generateId(), ...d }));
+}
+
+function loadDemoData() {
+  if (events.length > 0 && !confirm('将用最新核实数据刷新（仅住宅/商住/法拍）。\n\n已剔除工业用地，竞得人已逐条核实。\n建议先导出备份。\n\n选择"取消"将放弃操作。')) return;
+
+  events = getRealData();
+  saveEvents();
+  goToday();
+
+  const tomStr = formatDate(new Date(Date.now() + 86400000));
+  const tomorrowDeals = events.filter(e => e.date === tomStr && (e.type === '成交' || e.type === '待成交'));
+  alert(`已加载 ${events.length} 条核实数据（仅住宅·商住·法拍）！\n\n✅ 已剔除工业用地\n✅ 竞得人已逐条核实补全\n✅ 面积/价格已修正\n✅ v2.2 挂牌-成交日期彻底分离 + 待成交状态 + 月度/年度统计表\n📊 沈阳 ${events.filter(e=>e.city==='沈阳').length} | 大连 ${events.filter(e=>e.city==='大连').length} | 长春 ${events.filter(e=>e.city==='长春').length}\n📋 挂牌 ${events.filter(e=>e.type==='挂牌').length} | 已成交 ${events.filter(e=>e.type==='成交').length} | 待成交 ${events.filter(e=>e.type==='待成交').length} | 法拍 ${events.filter(e=>e.type==='法拍').length}\n⚠️ 明日截止提醒：${tomorrowDeals.length} 宗`);
+}
+
+// ===== 触摸手势（滑动切换月份）=====
+(function() {
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
+      if (dx < -40) nextMonth();
+      else if (dx > 40) prevMonth();
+    }
+  });
+})();
+
+// ===== 启动 =====
+init();
+
+// ===== PWA: Manifest & Service Worker =====
+(function() {
+  // Manifest
+  const manifest = {
+    name: '东北三城土地日历',
+    short_name: '土地日历',
+    description: '沈阳·大连·长春 住宅/商住/法拍土地信息追踪',
+    start_url: '.',
+    display: 'standalone',
+    orientation: 'portrait',
+    background_color: '#F5F6FA',
+    theme_color: '#1a1a2e',
+    icons: [{
+      src: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%231a1a2e" width="192" height="192" rx="32"/><text x="96" y="120" text-anchor="middle" fill="white" font-size="88">🏙️</text></svg>'),
+      sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable'
+    }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = URL.createObjectURL(blob);
+  document.head.appendChild(link);
+
+  // Service Worker (离线缓存)
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      const CACHE = 'land-calendar-v2';
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE).then(c => c.addAll(['.'])));
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
+        self.clients.claim();
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(
+          caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+            if (res.ok) { const clone = res.clone(); caches.open(CACHE).then(c => c.put(e.request, clone)); }
+            return res;
+          }))
+        );
+      });
+    `;
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+  }
+
+  // iOS 添加到桌面引导
+  const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+  const isStandalone = navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  if (isIOS && !isStandalone && !localStorage.getItem('pwa_hint_dismissed')) {
+    setTimeout(function() {
+      const hint = document.createElement('div');
+      hint.id = 'pwaHint';
+      hint.innerHTML = `
+        <div style="position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;color:#fff;padding:14px 20px 20px;z-index:9999;text-align:center;font-size:14px;border-radius:16px 16px 0 0">
+          <div style="font-size:28px;margin-bottom:4px">📱</div>
+          <div style="font-weight:700;margin-bottom:4px">添加到桌面，随时查看土地日历</div>
+          <div style="font-size:12px;opacity:0.75;margin-bottom:10px">点击下方 <span style="font-size:16px">⎋</span> 分享按钮 → 选择「添加到主屏幕」</div>
+          <button onclick="document.getElementById('pwaHint').remove();localStorage.setItem('pwa_hint_dismissed','1')" style="background:rgba(255,255,255,0.2);color:#fff;border:none;padding:8px 24px;border-radius:20px;font-size:13px;font-weight:600">知道了</button>
+        </div>`;
+      document.body.appendChild(hint);
+    }, 2000);
+  }
+})();
+</script>
+</body>
+</html>
