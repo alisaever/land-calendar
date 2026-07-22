@@ -2,15 +2,10 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>东北三城土地日历</title>
 <meta name="description" content="沈阳·大连·长春 住宅/商住/法拍土地信息追踪">
 <meta name="theme-color" content="#1a1a2e">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="土地日历">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a1a2e' width='100' height='100' rx='20'/><text x='50' y='65' text-anchor='middle' fill='white' font-size='48'>🏙️</text></svg>">
-<meta name="mobile-web-app-capable" content="yes">
 <style>
 /* ===== 全局变量与重置 ===== */
 :root {
@@ -43,6 +38,9 @@ body {
 }
 .header h1 { font-size: 26px; font-weight: 700; letter-spacing: 2px; }
 .header .subtitle { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+.update-time { font-size: 12px; opacity: 0.6; margin-top: 6px; letter-spacing: 0.5px; }
+.update-time.fresh { color: #2ecc71; opacity: 0.85; }
+.update-time.stale { color: #e67e22; opacity: 0.85; }
 
 /* ===== 布局 ===== */
 .container { max-width: 1300px; margin: 0 auto; padding: 20px; display: flex; gap: 20px; }
@@ -116,7 +114,7 @@ body {
   overflow: hidden;
 }
 .calendar-header {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;
   padding: 16px 24px; border-bottom: 1px solid var(--border);
 }
 .calendar-header .month-label { font-size: 20px; font-weight: 700; }
@@ -329,7 +327,7 @@ body {
 	/* ===== 移动端响应式 ===== */
 @media (max-width: 900px) {
   .container { flex-direction: column; }
-  .side-panel { width: 100%; }
+  .side-panel { width: 100%; margin-top: 16px; border-top: 2px solid var(--border); padding-top: 16px; }
   .calendar-cell { min-height: 60px; }
   .day-number { font-size: 12px; }
   .badge { font-size: 9px; padding: 1px 4px; }
@@ -354,15 +352,16 @@ body {
   .search-box { min-width: 0; }
   .data-actions { justify-content: center; flex-wrap: wrap; }
   .data-actions .btn { font-size: 12px; padding: 7px 10px; }
-  .calendar-card .calendar-header { padding: 10px 12px; }
+  .calendar-card .calendar-header { padding: 10px 12px; gap: 4px; }
   .calendar-card .month-label { font-size: 16px; }
+  .calendar-header .legend-row { font-size: 10px; gap: 6px; flex-shrink: 0; }
   .calendar-grid { padding: 2px; gap: 1px; }
   .calendar-cell { min-height: 50px; padding: 3px; }
   .day-number { font-size: 11px; }
   .badge { font-size: 8px; padding: 1px 3px; border-radius: 6px; }
   .city-dot { width: 5px; height: 5px; }
   .weekday-row span { font-size: 11px; }
-  .nav-btn, .today-btn { min-width: 36px; min-height: 36px; }
+  .nav-btns { display: none !important; } .nav-btn, .today-btn { min-width: 36px; min-height: 36px; }
   .modal { width: 100vw; max-width: 100vw; border-radius: 16px 16px 0 0; position: fixed; bottom: 0; left: 0; max-height: 90vh; }
   .modal-actions { flex-direction: column; }
   .modal-actions .btn { width: 100%; justify-content: center; padding: 12px; }
@@ -382,7 +381,8 @@ body {
 <!-- ===== 头部 ===== -->
 <div class="header">
   <h1>🏙️ 东北三城土地市场日历</h1>
-  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖</div>
+  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.5</span></div>
+      <div class="update-time" id="updateTime">⏱ 数据加载中...</div>
 </div>
 
 <!-- ===== 主布局 ===== -->
@@ -420,7 +420,7 @@ body {
           <button class="nav-btn" onclick="nextMonth()">▶</button>
         </div>
         <div class="month-label" id="monthLabel">2026年 7月</div>
-        <div style="display:flex;gap:16px;align-items:center;font-size:12px;color:var(--text-secondary)">
+        <div class="legend-row" style="display:flex;gap:16px;align-items:center;font-size:12px;color:var(--text-secondary)">
           <span>🔵 挂牌</span><span>🟢 已成交</span><span>🟡 待成交</span><span>🟠 法拍</span>
         </div>
       </div>
@@ -525,6 +525,37 @@ body {
 <script>
 // ===== 全局状态 =====
 const STORAGE_KEY = 'land_calendar_events';
+const UPDATE_TIME_KEY = 'land_calendar_last_update';
+const DATA_VERSION = 6;  // 递增此数字可强制所有设备刷新数据
+const VERSION_KEY = 'land_calendar_data_version';
+
+function updateTimeDisplay() {
+  const el = document.getElementById('updateTime');
+  if (!el) return;
+  const ts = localStorage.getItem(UPDATE_TIME_KEY);
+  if (ts) {
+    const dt = new Date(parseInt(ts));
+    const now = new Date();
+    const diffMs = now - dt;
+    const diffDays = Math.floor(diffMs / 86400000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const timeStr = dt.toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+    let status = '';
+    if (diffHours < 24) { status = 'fresh'; el.className = 'update-time fresh'; }
+    else if (diffDays < 3) { status = 'recent'; el.className = 'update-time'; }
+    else { el.className = 'update-time stale'; }
+    const diffText = diffHours < 1 ? '刚刚' : diffHours < 24 ? `${diffHours}小时前` : `${diffDays}天前`;
+    el.textContent = `⏱ 数据更新：${timeStr}（${diffText}）`;
+  } else {
+    el.textContent = '⏱ 尚未刷新数据';
+    el.className = 'update-time stale';
+  }
+}
+
+function markUpdateTime() {
+  localStorage.setItem(UPDATE_TIME_KEY, Date.now().toString());
+  updateTimeDisplay();
+}
 let events = [];
 let currentYear, currentMonth;
 let selectedDate = null;       // 'YYYY-MM-DD'
@@ -533,10 +564,12 @@ let activeCity = '全部';
 // ===== 初始化 =====
 function init() {
   loadEvents();
-  // 首次使用自动加载真实数据
-  if (events.length === 0) {
+  const storedVersion = parseInt(localStorage.getItem(VERSION_KEY) || '0');
+  // 首次使用 或 代码版本更新 → 自动加载最新数据
+  if (events.length === 0 || storedVersion < DATA_VERSION) {
     events = getRealData();
     saveEvents();
+    localStorage.setItem(VERSION_KEY, String(DATA_VERSION));
   }
   const now = new Date();
   currentYear = now.getFullYear();
@@ -544,6 +577,7 @@ function init() {
   selectedDate = formatDate(now);
   renderAll();
   checkReminder();
+  updateTimeDisplay();
   bindEvents();
 }
 
@@ -594,6 +628,8 @@ function loadEvents() {
 
 function saveEvents() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+  localStorage.setItem(VERSION_KEY, String(DATA_VERSION));
+  markUpdateTime();
 }
 
 // ===== 日历导航 =====
@@ -1062,7 +1098,7 @@ function clearAllData() {
 
 // ===== 真实数据（仅住宅/商住/法拍 | 逐条核实竞得人、面积、日期 | 数据采集日：2026-07-09） =====
 function getRealData() {
-  // 来源：landchina.mnr.gov.cn / zrzyj.shenyang.gov.cn / ggzyjy.dl.gov.cn / www.ccggzy.com.cn
+  // v2.4·7/22更新：超凡大街→长春新发城建托底 | 来源：landchina / 沈阳自规局 / 大连交易平台 / 长春交易网 | 来源：landchina / 沈阳自规局 / 大连交易平台 / 长春交易网
   const rawData = [
     // ========== 沈阳 ==========
     // --- 北陵农场三期（沈土挂[2025]13号·公告12/26）---
@@ -1093,14 +1129,22 @@ function getRealData() {
     { city:'沈阳',type:'成交',name:'和平区永安路北地块（原丽阳广场·十年断供破局）',district:'和平区',area:'~7,400',price:'（未公开披露）',buyer:'新世纪集团',date:'2026-07-02' },
     // --- 沈阳 正在挂牌 ---
     { city:'沈阳',type:'挂牌',name:'SYTJ202604001 澜沧江街西-1',district:'皇姑区',area:'20,098',price:'14,836（起始）',buyer:'',date:'2026-06-20' },
-    { city:'沈阳',type:'挂牌',name:'SYTJ202603001 北一东路63号【拍卖出让】',district:'铁西区',area:'5,071',price:'6,839（起始）',buyer:'',date:'2026-07-02' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202603001 北一东路63号【拍卖出让·一环内】',district:'铁西区',area:'5,071',price:'5,620元/㎡（起拍）',buyer:'',date:'2026-07-02' },
     { city:'沈阳',type:'挂牌',name:'SYTJ202606009 沈本大街西白塔河二路南-1号',district:'浑南区',area:'约132,405',price:'（待公布）',buyer:'',date:'2026-07-04' },
-    { city:'沈阳',type:'挂牌',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'（待7/14公布）',price:'（待公布）',buyer:'',date:'2026-07-09' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'（待7/14公布）',price:'（待公布·参考楼面价9566元/㎡）',buyer:'',date:'2026-07-09' },
+    // --- 沈阳 新挂牌（沈土挂[2026]8号·7/9公告·王家湾+于洪）---
+    { city:'沈阳',type:'挂牌',name:'SYTJ202606007 祝科街东浑南中路北（王家湾）',district:'浑南区',area:'（待公布）',price:'（待公布）',buyer:'',date:'2026-07-09' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202606008 祝科街东文欣苑北-1（王家湾）',district:'浑南区',area:'（待公布）',price:'（待公布）',buyer:'',date:'2026-07-09' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202600001 滨江街西-1号',district:'于洪区',area:'（待公布）',price:'（待公布）',buyer:'',date:'2026-07-09' },
+
     // --- 沈阳 待成交（截止日） ---
-    { city:'沈阳',type:'待成交',name:'SYTJ202604001 澜沧江街西-1',district:'皇姑区',area:'20,098',price:'14,836（起始）',buyer:'待结果',date:'2026-07-10' },
-    { city:'沈阳',type:'待成交',name:'SYTJ202603001 北一东路63号【拍卖出让】',district:'铁西区',area:'5,071',price:'6,839（起始）',buyer:'待结果',date:'2026-07-22' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202604001 澜沧江街西-1【已流拍】',district:'皇姑区',area:'20,098',price:'14,836（起始）',buyer:'无人报价（已流拍）',date:'2026-07-10' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202603001 北一东路63号【拍卖出让·一环内】',district:'铁西区',area:'5,071',price:'5,620元/㎡（起拍）',buyer:'待结果',date:'2026-07-22' },
     { city:'沈阳',type:'待成交',name:'SYTJ202606009 沈本大街西白塔河二路南-1号',district:'浑南区',area:'约132,405',price:'（待公布）',buyer:'待结果',date:'2026-07-24' },
     { city:'沈阳',type:'待成交',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'（待7/14公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202606007 祝科街东浑南中路北（王家湾）',district:'浑南区',area:'（待公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202606008 祝科街东文欣苑北-1（王家湾）',district:'浑南区',area:'（待公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202600001 滨江街西-1号',district:'于洪区',area:'（待公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
 
     // ========== 大连 ==========
     // --- 马栏啤酒厂（公告12/20）---
@@ -1128,15 +1172,15 @@ function getRealData() {
     { city:'大连',type:'挂牌',name:'大城(2026)-3号 天丰街',district:'沙河口区',area:'20,007',price:'23,679（起始）',buyer:'',date:'2026-06-05' },
     { city:'大连',type:'成交',name:'大城(2026)-3号 天丰街（绿城新作）',district:'沙河口区',area:'20,007',price:'23,679',buyer:'大连绿城置业有限公司',date:'2026-06-25' },
     // --- 大连 正在挂牌 ---
-    { city:'大连',type:'挂牌',name:'大城(2026)-8号【捆绑出让①】',district:'大连市区',area:'约33,200（合计）',price:'25,900（起始）',buyer:'',date:'2026-06-25' },
-    { city:'大连',type:'挂牌',name:'大城(2026)-9号【捆绑出让②】',district:'大连市区',area:'（合计）',price:'37,700（起始）',buyer:'',date:'2026-06-25' },
+    { city:'大连',type:'挂牌',name:'大城(2026)-8号 胜利东路南A【捆绑①·7/6-7/15】',district:'西岗区',area:'16,040',price:'25,928（起始）',buyer:'',date:'2026-06-25' },
+    { city:'大连',type:'挂牌',name:'大城(2026)-9号 胜利东路南B【捆绑②·7/6-7/15】',district:'西岗区',area:'17,142',price:'37,718（起始）',buyer:'',date:'2026-06-25' },
     { city:'大连',type:'挂牌',name:'大甘(2026)-5号 美林园北侧【捆绑①·7/3公告】',district:'甘井子区',area:'30,255',price:'保证金4,424',buyer:'',date:'2026-07-03' },
     { city:'大连',type:'挂牌',name:'大甘(2026)-6号 美林园北侧【捆绑②·7/3公告】',district:'甘井子区',area:'46,128',price:'保证金6,824',buyer:'',date:'2026-07-03' },
     { city:'大连',type:'挂牌',name:'大普(2026)-3号 太平街道（住宅+商务金融）',district:'普兰店区',area:'10,052',price:'2,467（起始）',buyer:'',date:'2026-07-07' },
     { city:'大连',type:'挂牌',name:'大城(2026)-10号 东港K03-1（恒大商改住·7/7公告）',district:'中山区',area:'7,478',price:'保证金8,450',buyer:'',date:'2026-07-07' },
     // --- 大连 待成交（截止日） ---
-    { city:'大连',type:'待成交',name:'大城(2026)-8号【捆绑出让①】',district:'大连市区',area:'约33,200（合计）',price:'25,900（起始）',buyer:'待结果',date:'2026-07-15' },
-    { city:'大连',type:'待成交',name:'大城(2026)-9号【捆绑出让②】',district:'大连市区',area:'（合计）',price:'37,700（起始）',buyer:'待结果',date:'2026-07-15' },
+    { city:'大连',type:'成交',name:'大城(2026)-8号 胜利东路南A【捆绑①·溢价30%】',district:'西岗区',area:'16,040',price:'33,781',buyer:'大连润海房地产有限公司（华润置地）',date:'2026-07-15' },
+    { city:'大连',type:'成交',name:'大城(2026)-9号 胜利东路南B【捆绑②·溢价31%】',district:'西岗区',area:'17,142',price:'49,465',buyer:'大连润海房地产有限公司（华润置地）',date:'2026-07-15' },
     { city:'大连',type:'待成交',name:'大甘(2026)-5号 美林园北侧【捆绑①】',district:'甘井子区',area:'30,255',price:'保证金4,424',buyer:'待结果',date:'2026-08-05' },
     { city:'大连',type:'待成交',name:'大甘(2026)-6号 美林园北侧【捆绑②】',district:'甘井子区',area:'46,128',price:'保证金6,824',buyer:'待结果',date:'2026-08-05' },
     { city:'大连',type:'待成交',name:'大普(2026)-3号 太平街道（住宅+商务金融）',district:'普兰店区',area:'10,052',price:'2,467（起始）',buyer:'待结果',date:'2026-08-06' },
@@ -1162,8 +1206,12 @@ function getRealData() {
     // --- 长春 正在挂牌 ---
     { city:'长春',type:'挂牌',name:'长公资土挂[2026]31号 超凡大街（紧邻吉大尚德）',district:'高新区',area:'50,843',price:'30,971（起始）',buyer:'',date:'2026-06-26' },
 
+    // --- 长春 新挂牌 ---
+    { city:'长春',type:'挂牌',name:'长公资土挂[2026]35号 北人民大街（棚改·7/1公告）',district:'宽城区',area:'26,068',price:'13,809（起始）',buyer:'',date:'2026-07-01' },
+    { city:'长春',type:'挂牌',name:'长公资土挂[2026]36号 北环城路（棚改·6/29公告）',district:'宽城区',area:'17,395',price:'7,492（起始）',buyer:'',date:'2026-06-29' },
+
     // --- 长春 待成交（截止日） ---
-    { city:'长春',type:'待成交',name:'长公资土挂[2026]31号 超凡大街（紧邻吉大尚德）',district:'高新区',area:'50,843',price:'30,971（起始）',buyer:'待结果',date:'2026-07-16' },
+    { city:'长春',type:'成交',name:'长公资土挂[2026]31号 超凡大街（紧邻吉大尚德·国资托底）',district:'高新区',area:'50,843',price:'30,971（底价·楼面4,061元/㎡）',buyer:'长春新发城市建设置业有限公司',date:'2026-07-16' },
     { city:'长春',type:'待成交',name:'长公资土挂[2026]35号 北人民大街',district:'宽城区',area:'26,068',price:'13,809（起始）',buyer:'待结果',date:'2026-07-31' },
     { city:'长春',type:'待成交',name:'长公资土挂[2026]36号 北环城路',district:'宽城区',area:'17,395',price:'楼面2,692元/㎡',buyer:'待结果',date:'2026-07-31' },
   ];
@@ -1176,11 +1224,13 @@ function loadDemoData() {
 
   events = getRealData();
   saveEvents();
+  localStorage.setItem(VERSION_KEY, String(DATA_VERSION));
+  markUpdateTime();
   goToday();
 
   const tomStr = formatDate(new Date(Date.now() + 86400000));
   const tomorrowDeals = events.filter(e => e.date === tomStr && (e.type === '成交' || e.type === '待成交'));
-  alert(`已加载 ${events.length} 条核实数据（仅住宅·商住·法拍）！\n\n✅ 已剔除工业用地\n✅ 竞得人已逐条核实补全\n✅ 面积/价格已修正\n✅ v2.2 挂牌-成交日期彻底分离 + 待成交状态 + 月度/年度统计表\n📊 沈阳 ${events.filter(e=>e.city==='沈阳').length} | 大连 ${events.filter(e=>e.city==='大连').length} | 长春 ${events.filter(e=>e.city==='长春').length}\n📋 挂牌 ${events.filter(e=>e.type==='挂牌').length} | 已成交 ${events.filter(e=>e.type==='成交').length} | 待成交 ${events.filter(e=>e.type==='待成交').length} | 法拍 ${events.filter(e=>e.type==='法拍').length}\n⚠️ 明日截止提醒：${tomorrowDeals.length} 宗`);
+  alert(`已加载 ${events.length} 条核实数据（仅住宅·商住·法拍）！\n\n✅ 已剔除工业用地\n✅ 竞得人已逐条核实补全\n✅ 面积/价格已修正\n✅ v2.4·7/22更新：超凡大街长春新发城建托底\n📊 沈阳 ${events.filter(e=>e.city==='沈阳').length} | 大连 ${events.filter(e=>e.city==='大连').length} | 长春 ${events.filter(e=>e.city==='长春').length}\n📋 挂牌 ${events.filter(e=>e.type==='挂牌').length} | 已成交 ${events.filter(e=>e.type==='成交').length} | 待成交 ${events.filter(e=>e.type==='待成交').length} | 法拍 ${events.filter(e=>e.type==='法拍').length}\n⚠️ 明日截止提醒：${tomorrowDeals.length} 宗`);
 }
 
 // ===== 触摸手势（滑动切换月份）=====
@@ -1203,72 +1253,6 @@ function loadDemoData() {
 // ===== 启动 =====
 init();
 
-// ===== PWA: Manifest & Service Worker =====
-(function() {
-  // Manifest
-  const manifest = {
-    name: '东北三城土地日历',
-    short_name: '土地日历',
-    description: '沈阳·大连·长春 住宅/商住/法拍土地信息追踪',
-    start_url: '.',
-    display: 'standalone',
-    orientation: 'portrait',
-    background_color: '#F5F6FA',
-    theme_color: '#1a1a2e',
-    icons: [{
-      src: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%231a1a2e" width="192" height="192" rx="32"/><text x="96" y="120" text-anchor="middle" fill="white" font-size="88">🏙️</text></svg>'),
-      sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable'
-    }]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = URL.createObjectURL(blob);
-  document.head.appendChild(link);
-
-  // Service Worker (离线缓存)
-  if ('serviceWorker' in navigator) {
-    const swCode = `
-      const CACHE = 'land-calendar-v2';
-      self.addEventListener('install', e => {
-        e.waitUntil(caches.open(CACHE).then(c => c.addAll(['.'])));
-        self.skipWaiting();
-      });
-      self.addEventListener('activate', e => {
-        e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
-        self.clients.claim();
-      });
-      self.addEventListener('fetch', e => {
-        e.respondWith(
-          caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-            if (res.ok) { const clone = res.clone(); caches.open(CACHE).then(c => c.put(e.request, clone)); }
-            return res;
-          }))
-        );
-      });
-    `;
-    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
-  }
-
-  // iOS 添加到桌面引导
-  const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-  const isStandalone = navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-  if (isIOS && !isStandalone && !localStorage.getItem('pwa_hint_dismissed')) {
-    setTimeout(function() {
-      const hint = document.createElement('div');
-      hint.id = 'pwaHint';
-      hint.innerHTML = `
-        <div style="position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;color:#fff;padding:14px 20px 20px;z-index:9999;text-align:center;font-size:14px;border-radius:16px 16px 0 0">
-          <div style="font-size:28px;margin-bottom:4px">📱</div>
-          <div style="font-weight:700;margin-bottom:4px">添加到桌面，随时查看土地日历</div>
-          <div style="font-size:12px;opacity:0.75;margin-bottom:10px">点击下方 <span style="font-size:16px">⎋</span> 分享按钮 → 选择「添加到主屏幕」</div>
-          <button onclick="document.getElementById('pwaHint').remove();localStorage.setItem('pwa_hint_dismissed','1')" style="background:rgba(255,255,255,0.2);color:#fff;border:none;padding:8px 24px;border-radius:20px;font-size:13px;font-weight:600">知道了</button>
-        </div>`;
-      document.body.appendChild(hint);
-    }, 2000);
-  }
-})();
 </script>
 </body>
 </html>
