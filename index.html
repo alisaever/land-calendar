@@ -381,7 +381,7 @@ body {
 <!-- ===== 头部 ===== -->
 <div class="header">
   <h1>🏙️ 东北三城土地市场日历</h1>
-  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.5</span></div>
+  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.6</span></div>
       <div class="update-time" id="updateTime">⏱ 数据加载中...</div>
 </div>
 
@@ -526,7 +526,7 @@ body {
 // ===== 全局状态 =====
 const STORAGE_KEY = 'land_calendar_events';
 const UPDATE_TIME_KEY = 'land_calendar_last_update';
-const DATA_VERSION = 6;  // 递增此数字可强制所有设备刷新数据
+const DATA_VERSION = 7;  // 递增此数字可强制所有设备刷新数据
 const VERSION_KEY = 'land_calendar_data_version';
 
 function updateTimeDisplay() {
@@ -1096,7 +1096,7 @@ function clearAllData() {
   renderAll();
 }
 
-// ===== 真实数据（仅住宅/商住/法拍 | 逐条核实竞得人、面积、日期 | 数据采集日：2026-07-09） =====
+// ===== 真实数据（仅住宅/商住/法拍 | 逐条核实竞得人、面积、日期 | 数据采集日：2026-07-28） =====
 function getRealData() {
   // v2.4·7/22更新：超凡大街→长春新发城建托底 | 来源：landchina / 沈阳自规局 / 大连交易平台 / 长春交易网 | 来源：landchina / 沈阳自规局 / 大连交易平台 / 长春交易网
   const rawData = [
@@ -1130,21 +1130,24 @@ function getRealData() {
     // --- 沈阳 正在挂牌 ---
     { city:'沈阳',type:'挂牌',name:'SYTJ202604001 澜沧江街西-1',district:'皇姑区',area:'20,098',price:'14,836（起始）',buyer:'',date:'2026-06-20' },
     { city:'沈阳',type:'挂牌',name:'SYTJ202603001 北一东路63号【拍卖出让·一环内】',district:'铁西区',area:'5,071',price:'5,620元/㎡（起拍）',buyer:'',date:'2026-07-02' },
-    { city:'沈阳',type:'挂牌',name:'SYTJ202606009 沈本大街西白塔河二路南-1号',district:'浑南区',area:'约132,405',price:'（待公布）',buyer:'',date:'2026-07-04' },
-    { city:'沈阳',type:'挂牌',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'（待7/14公布）',price:'（待公布·参考楼面价9566元/㎡）',buyer:'',date:'2026-07-09' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202606009 沈本大街西白塔河二路南-1号【商业用地B1】',district:'浑南区',area:'73,558',price:'1,510元/㎡（起始）',buyer:'',date:'2026-07-04' },
+    { city:'沈阳',type:'挂牌',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'37,983',price:'楼面9,566元/㎡（起始）',buyer:'',date:'2026-07-09' },
     // --- 沈阳 新挂牌（沈土挂[2026]8号·7/9公告·王家湾+于洪）---
     { city:'沈阳',type:'挂牌',name:'SYTJ202606007 祝科街东浑南中路北（王家湾）',district:'浑南区',area:'（待公布）',price:'（待公布）',buyer:'',date:'2026-07-09' },
     { city:'沈阳',type:'挂牌',name:'SYTJ202606008 祝科街东文欣苑北-1（王家湾）',district:'浑南区',area:'（待公布）',price:'（待公布）',buyer:'',date:'2026-07-09' },
     { city:'沈阳',type:'挂牌',name:'SYTJ202600001 滨江街西-1号',district:'于洪区',area:'（待公布）',price:'（待公布）',buyer:'',date:'2026-07-09' },
+    // --- 沈阳 新挂牌（沈土挂[2026]10号·7/22公告·榆树台低密）---
+    { city:'沈阳',type:'挂牌',name:'SYTJ202606005 华园路南金阳大街西-1【榆树台低密·≤1.2】',district:'浑南区',area:'40,002',price:'楼面6,225元/㎡（起始）',buyer:'',date:'2026-07-22' },
 
     // --- 沈阳 待成交（截止日） ---
     { city:'沈阳',type:'待成交',name:'SYTJ202604001 澜沧江街西-1【已流拍】',district:'皇姑区',area:'20,098',price:'14,836（起始）',buyer:'无人报价（已流拍）',date:'2026-07-10' },
-    { city:'沈阳',type:'待成交',name:'SYTJ202603001 北一东路63号【拍卖出让·一环内】',district:'铁西区',area:'5,071',price:'5,620元/㎡（起拍）',buyer:'待结果',date:'2026-07-22' },
-    { city:'沈阳',type:'待成交',name:'SYTJ202606009 沈本大街西白塔河二路南-1号',district:'浑南区',area:'约132,405',price:'（待公布）',buyer:'待结果',date:'2026-07-24' },
-    { city:'沈阳',type:'待成交',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'（待7/14公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202603001 北一东路63号【拍卖·流拍/待核实】',district:'铁西区',area:'5,071',price:'5,620元/㎡（起拍）',buyer:'结果未公布（可能流拍）',date:'2026-07-22' },
+    { city:'沈阳',type:'成交',name:'SYTJ202606009 沈本大街西白塔河二路南-1号【商业用地B1·华润】',district:'浑南区',area:'73,558',price:'19,993万（1,510元/㎡底价）',buyer:'大连润海房地产有限公司（华润置地）',date:'2026-07-24' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202602001 文化路南地块【二类居住·沈河核心】',district:'沈河区',area:'37,983',price:'楼面9,566元/㎡（起始）',buyer:'待结果',date:'2026-08-11' },
     { city:'沈阳',type:'待成交',name:'SYTJ202606007 祝科街东浑南中路北（王家湾）',district:'浑南区',area:'（待公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
     { city:'沈阳',type:'待成交',name:'SYTJ202606008 祝科街东文欣苑北-1（王家湾）',district:'浑南区',area:'（待公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
     { city:'沈阳',type:'待成交',name:'SYTJ202600001 滨江街西-1号',district:'于洪区',area:'（待公布）',price:'（待公布）',buyer:'待结果',date:'2026-08-11' },
+    { city:'沈阳',type:'待成交',name:'SYTJ202606005 华园路南金阳大街西-1【榆树台低密·≤1.2】',district:'浑南区',area:'40,002',price:'楼面6,225元/㎡（起始）',buyer:'待结果',date:'2026-08-24' },
 
     // ========== 大连 ==========
     // --- 马栏啤酒厂（公告12/20）---
@@ -1230,7 +1233,7 @@ function loadDemoData() {
 
   const tomStr = formatDate(new Date(Date.now() + 86400000));
   const tomorrowDeals = events.filter(e => e.date === tomStr && (e.type === '成交' || e.type === '待成交'));
-  alert(`已加载 ${events.length} 条核实数据（仅住宅·商住·法拍）！\n\n✅ 已剔除工业用地\n✅ 竞得人已逐条核实补全\n✅ 面积/价格已修正\n✅ v2.4·7/22更新：超凡大街长春新发城建托底\n📊 沈阳 ${events.filter(e=>e.city==='沈阳').length} | 大连 ${events.filter(e=>e.city==='大连').length} | 长春 ${events.filter(e=>e.city==='长春').length}\n📋 挂牌 ${events.filter(e=>e.type==='挂牌').length} | 已成交 ${events.filter(e=>e.type==='成交').length} | 待成交 ${events.filter(e=>e.type==='待成交').length} | 法拍 ${events.filter(e=>e.type==='法拍').length}\n⚠️ 明日截止提醒：${tomorrowDeals.length} 宗`);
+  alert(`已加载 ${events.length} 条核实数据（仅住宅·商住·法拍）！\n\n✅ 已剔除工业用地\n✅ 竞得人已逐条核实补全\n✅ 面积/价格已修正\n✅ v2.6·7/28刷新：沈本大街西成交+文化路南补全+华园路南新挂牌\n📊 沈阳 ${events.filter(e=>e.city==='沈阳').length} | 大连 ${events.filter(e=>e.city==='大连').length} | 长春 ${events.filter(e=>e.city==='长春').length}\n📋 挂牌 ${events.filter(e=>e.type==='挂牌').length} | 已成交 ${events.filter(e=>e.type==='成交').length} | 待成交 ${events.filter(e=>e.type==='待成交').length} | 法拍 ${events.filter(e=>e.type==='法拍').length}\n⚠️ 明日截止提醒：${tomorrowDeals.length} 宗`);
 }
 
 // ===== 触摸手势（滑动切换月份）=====
