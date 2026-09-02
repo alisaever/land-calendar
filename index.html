@@ -384,7 +384,7 @@ body {
 <!-- ===== 头部 ===== -->
 <div class="header">
   <h1>🏙️ 东北三城土地市场日历</h1>
-  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.9</span></div>
+  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.10</span></div>
       <div class="update-time" id="updateTime">⏱ 数据加载中...</div>
 </div>
 
@@ -529,7 +529,7 @@ body {
 // ===== 全局状态 =====
 const STORAGE_KEY = 'land_calendar_events';
 const UPDATE_TIME_KEY = 'land_calendar_last_update';
-const DATA_VERSION = 11;  // 递增此数字可强制所有设备刷新数据
+const DATA_VERSION = 12;  // 递增此数字可强制所有设备刷新数据
 const VERSION_KEY = 'land_calendar_data_version';
 
 function updateTimeDisplay() {
@@ -1101,7 +1101,7 @@ function clearAllData() {
 
 // ===== 真实数据（仅住宅/商住/法拍 | 逐条核实竞得人、面积、日期 | 数据采集日：2026-07-28） =====
 function getRealData() {
-  // v2.9·8/28刷新：沈阳药科大学/榆树台/东港/美林园成交·王家湾流拍二度挂牌·剔除工业(大普3号)/纯商业(滨江街西) | 来源：landchina / 沈阳自规局 / 大连交易平台
+  // v2.10·9/2刷新：新增大连甘井子革镇堡大甘(2025)-6号住宅地(4.14亿·9/16截止·二次入市) | 来源：大连交易平台 / 观点网
   const rawData = [
     // ========== 沈阳 ==========
     // --- 北陵农场三期（沈土挂[2025]13号·公告12/26）---
@@ -1188,6 +1188,7 @@ function getRealData() {
     { city:'大连',type:'挂牌',name:'大甘(2026)-6号 美林园北侧【捆绑②】',district:'甘井子区',area:'46,128',price:'保证金6,824',buyer:'',date:'2026-07-03' },
     { city:'大连',type:'挂牌',name:'大城(2026)-10号 东港K03-1（原恒大迦南公馆·商改住）',district:'中山区',area:'7,478',price:'16,899（起始）',buyer:'',date:'2026-07-07' },
     { city:'大连',type:'挂牌',name:'大甘(2026)-7号 万科大家南侧高云路东【≤1.19】',district:'甘井子区',area:'9,288',price:'（起始待公布）',buyer:'',date:'2026-08-26' },
+    { city:'大连',type:'挂牌',name:'大甘(2025)-6号 革镇堡中革村【地铁2号线革镇堡站·≤1.6】',district:'甘井子区',area:'68,000',price:'41,400万（楼面3,802元/㎡起始）',buyer:'',date:'2026-08-14' },
     // --- 大连 待成交（截止日） ---
     { city:'大连',type:'成交',name:'大城(2026)-8号 胜利东路南A【捆绑①·溢价30%】',district:'西岗区',area:'16,040',price:'33,781',buyer:'大连润海房地产有限公司（华润置地）',date:'2026-07-15' },
     { city:'大连',type:'成交',name:'大城(2026)-9号 胜利东路南B【捆绑②·溢价31%】',district:'西岗区',area:'17,142',price:'49,465',buyer:'大连润海房地产有限公司（华润置地）',date:'2026-07-15' },
@@ -1195,6 +1196,7 @@ function getRealData() {
     { city:'大连',type:'成交',name:'大甘(2026)-6号 美林园北侧【捆绑②·溢价33.7%】',district:'甘井子区',area:'46,128',price:'45,622万（楼面6,354元/㎡）',buyer:'大连筑业地产有限公司',date:'2026-08-05' },
     { city:'大连',type:'成交',name:'大城(2026)-10号 东港K03-1【原恒大迦南公馆·商改住】',district:'中山区',area:'7,478',price:'19,899万（楼面14,672元/㎡·溢价17.8%）',buyer:'大连宏坤房地产开发有限公司',date:'2026-08-07' },
     { city:'大连',type:'待成交',name:'大甘(2026)-7号 万科大家南侧高云路东【≤1.19】',district:'甘井子区',area:'9,288',price:'（起始待公布）',buyer:'待结果',date:'2026-09-24' },
+    { city:'大连',type:'待成交',name:'大甘(2025)-6号 革镇堡中革村【地铁2号线革镇堡站·二次入市】',district:'甘井子区',area:'68,000',price:'41,400万（楼面3,802元/㎡起始）',buyer:'待结果',date:'2026-09-16' },
 
     // ========== 长春 ==========
     // --- 宽城区九东路（公告1/22）---
@@ -1240,7 +1242,7 @@ function loadDemoData() {
 
   const tomStr = formatDate(new Date(Date.now() + 86400000));
   const tomorrowDeals = events.filter(e => e.date === tomStr && (e.type === '成交' || e.type === '待成交'));
-  alert(`已加载 ${events.length} 条核实数据（仅住宅·商住·法拍）！\n\n✅ 已剔除工业用地（大普2026-3号）\n✅ 已剔除纯商业用地（滨江街西-1号）\n✅ v2.9·8/28刷新：沈阳药科大学(绿城11.5亿)/榆树台(万锦2.99亿)/东港K03-1(宏坤1.99亿)/美林园6号成交\n✅ 王家湾两宗8/11流拍·9/15二度挂牌\n📊 沈阳 ${events.filter(e=>e.city==='沈阳').length} | 大连 ${events.filter(e=>e.city==='大连').length} | 长春 ${events.filter(e=>e.city==='长春').length}\n📋 挂牌 ${events.filter(e=>e.type==='挂牌').length} | 已成交 ${events.filter(e=>e.type==='成交').length} | 待成交 ${events.filter(e=>e.type==='待成交').length} | 法拍 ${events.filter(e=>e.type==='法拍').length}\n⚠️ 明日截止提醒：${tomorrowDeals.length} 宗`);
+  alert(`已加载 ${events.length} 条核实数据（仅住宅·商住·法拍）！\n\n✅ 已剔除工业用地（大普2026-3号）\n✅ 已剔除纯商业用地（滨江街西-1号）\n✅ v2.10·9/2刷新：新增大连甘井子革镇堡大甘(2025)-6号住宅地(4.14亿·9/16截止)\n📊 沈阳 ${events.filter(e=>e.city==='沈阳').length} | 大连 ${events.filter(e=>e.city==='大连').length} | 长春 ${events.filter(e=>e.city==='长春').length}\n📋 挂牌 ${events.filter(e=>e.type==='挂牌').length} | 已成交 ${events.filter(e=>e.type==='成交').length} | 待成交 ${events.filter(e=>e.type==='待成交').length} | 法拍 ${events.filter(e=>e.type==='法拍').length}\n⚠️ 明日截止提醒：${tomorrowDeals.length} 宗`);
 }
 
 // ===== 触摸手势（滑动切换月份）=====
