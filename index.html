@@ -384,7 +384,7 @@ body {
 <!-- ===== 头部 ===== -->
 <div class="header">
   <h1>🏙️ 东北三城土地市场日历</h1>
-  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.14</span></div>
+  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.15</span></div>
       <div class="update-time" id="updateTime">⏱ 数据加载中...</div>
 </div>
 
@@ -529,7 +529,7 @@ body {
 // ===== 全局状态 =====
 const STORAGE_KEY = 'land_calendar_events';
 const UPDATE_TIME_KEY = 'land_calendar_last_update';
-const DATA_VERSION = 16;  // 递增此数字可强制所有设备刷新数据
+const DATA_VERSION = 17;  // 递增此数字可强制所有设备刷新数据
 const VERSION_KEY = 'land_calendar_data_version';
 
 function updateTimeDisplay() {
@@ -1101,7 +1101,7 @@ function clearAllData() {
 
 // ===== 真实数据（仅住宅/商住/法拍 | 逐条核实竞得人、面积、日期 | 数据采集日：2026-07-28） =====
 function getRealData() {
-  // v2.14·9/30刷新：沈阳王家湾两宗成交(新屹置业3.73亿)+大连万科大家南侧成交(万疆1.1亿·溢价36.7%) | 新增大东两宗(9/30截牌)+长春宽城67号 | 来源：观点网/自然资源部/长春公共资源交易网
+  // v2.15·补录大连中山区大城(2026)-13号(商住·10/16截止) | 来源：大连公共资源交易网/观点网
   const rawData = [
     // ========== 沈阳 ==========
     // --- 北陵农场三期（沈土挂[2025]13号·公告12/26）---
@@ -1197,6 +1197,8 @@ function getRealData() {
     { city:'大连',type:'挂牌',name:'大城(2026)-10号 东港K03-1（原恒大迦南公馆·商改住）',district:'中山区',area:'7,478',price:'16,899（起始）',buyer:'',date:'2026-07-07' },
     { city:'大连',type:'挂牌',name:'大甘(2026)-7号 万科大家南侧高云路东【≤1.19】',district:'甘井子区',area:'9,288',price:'8,032万（起始）',buyer:'',date:'2026-08-26' },
     { city:'大连',type:'挂牌',name:'大甘(2025)-6号 革镇堡中革村【地铁2号线革镇堡站·≤1.6】',district:'甘井子区',area:'68,000',price:'41,400万（楼面3,802元/㎡起始）',buyer:'',date:'2026-08-14' },
+    // --- 大连 新挂牌（2026年第69号·9/15公告·中山区长江东路南）---
+    { city:'大连',type:'挂牌',name:'大城(2026)-13号 长江东路南春海街西【商住·≤1.16】',district:'中山区',area:'11,506',price:'16,004万（起始）',buyer:'',date:'2026-09-15' },
     // --- 大连 待成交（截止日） ---
     { city:'大连',type:'成交',name:'大城(2026)-8号 胜利东路南A【捆绑①·溢价30%】',district:'西岗区',area:'16,040',price:'33,781',buyer:'大连润海房地产有限公司（华润置地）',date:'2026-07-15' },
     { city:'大连',type:'成交',name:'大城(2026)-9号 胜利东路南B【捆绑②·溢价31%】',district:'西岗区',area:'17,142',price:'49,465',buyer:'大连润海房地产有限公司（华润置地）',date:'2026-07-15' },
@@ -1205,6 +1207,7 @@ function getRealData() {
     { city:'大连',type:'成交',name:'大城(2026)-10号 东港K03-1【原恒大迦南公馆·商改住】',district:'中山区',area:'7,478',price:'19,899万（楼面14,672元/㎡·溢价17.8%）',buyer:'大连宏坤房地产开发有限公司',date:'2026-08-07' },
     { city:'大连',type:'成交',name:'大甘(2026)-7号 万科大家南侧高云路东【≤1.19·万疆】',district:'甘井子区',area:'9,288',price:'10,982万（楼面约10,454元/㎡·溢价36.7%）',buyer:'大连万疆城置业有限责任公司',date:'2026-09-24' },
     { city:'大连',type:'待成交',name:'大甘(2025)-6号 革镇堡中革村【地铁2号线革镇堡站·流拍】',district:'甘井子区',area:'68,000',price:'41,400万（楼面3,802元/㎡起始）',buyer:'无人报价（终止挂牌·三次流拍）',date:'2026-09-16' },
+    { city:'大连',type:'待成交',name:'大城(2026)-13号 长江东路南春海街西【商住·≤1.16】',district:'中山区',area:'11,506',price:'16,004万（起始）',buyer:'待结果',date:'2026-10-16' },
 
     // ========== 长春 ==========
     // --- 宽城区九东路（公告1/22）---
