@@ -384,7 +384,7 @@ body {
 <!-- ===== 头部 ===== -->
 <div class="header">
   <h1>🏙️ 东北三城土地市场日历</h1>
-  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.15</span></div>
+  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.16</span></div>
       <div class="update-time" id="updateTime">⏱ 数据加载中...</div>
 </div>
 
@@ -529,7 +529,7 @@ body {
 // ===== 全局状态 =====
 const STORAGE_KEY = 'land_calendar_events';
 const UPDATE_TIME_KEY = 'land_calendar_last_update';
-const DATA_VERSION = 17;  // 递增此数字可强制所有设备刷新数据
+const DATA_VERSION = 18;  // 递增此数字可强制所有设备刷新数据
 const VERSION_KEY = 'land_calendar_data_version';
 
 function updateTimeDisplay() {
@@ -1101,7 +1101,7 @@ function clearAllData() {
 
 // ===== 真实数据（仅住宅/商住/法拍 | 逐条核实竞得人、面积、日期 | 数据采集日：2026-07-28） =====
 function getRealData() {
-  // v2.15·补录大连中山区大城(2026)-13号(商住·10/16截止) | 来源：大连公共资源交易网/观点网
+  // v2.16·landchina核对：补录长春长公资土挂[2026]17号(九台区商住·5/14截止) | 三城住宅/商住/法拍已核对无其他遗漏 | 来源：landchina.mnr.gov.cn
   const rawData = [
     // ========== 沈阳 ==========
     // --- 北陵农场三期（沈土挂[2025]13号·公告12/26）---
@@ -1235,6 +1235,8 @@ function getRealData() {
     { city:'长春',type:'挂牌',name:'长公资土挂[2026]52号 南关区人民大街东【ZX-20-01-09·≤4.0】',district:'南关区',area:'67,059',price:'43,900万（起始）',buyer:'',date:'2026-09-01' },
     // --- 长春 新挂牌（长公资土挂[2026]67号·9/28公告·宽城棚改）---
     { city:'长春',type:'挂牌',name:'长公资土挂[2026]67号 宽城区北十条棚改【商住·含幼儿园·成本出让】',district:'宽城区',area:'8,563',price:'楼面2,055元/㎡（起始）',buyer:'',date:'2026-09-28' },
+    // --- 补录：长公资土挂[2026]17号（4/3公告·长春新区/九台区商住）---
+    { city:'长春',type:'挂牌',name:'长公资土挂[2026]17号 世港大街西领航路北【商住·≤1.7】',district:'九台区',area:'14,282',price:'1,466万（楼面604元/㎡起始）',buyer:'',date:'2026-04-03' },
 
     // --- 长春 待成交（截止日） ---
     { city:'长春',type:'成交',name:'长公资土挂[2026]31号 超凡大街（紧邻吉大尚德·国资托底）',district:'高新区',area:'50,843',price:'30,971（底价·楼面4,061元/㎡）',buyer:'长春新发城市建设置业有限公司',date:'2026-07-16' },
@@ -1242,6 +1244,7 @@ function getRealData() {
     { city:'长春',type:'成交',name:'长公资土挂[2026]36号 北环城路（棚改·嘉瑞摘牌）',district:'宽城区',area:'17,395',price:'7,492（底价成交）',buyer:'长春市嘉瑞房地产开发有限公司',date:'2026-07-31' },
     { city:'长春',type:'待成交',name:'长公资土挂[2026]52号 南关区人民大街东【ZX-20-01-09·≤4.0】',district:'南关区',area:'67,059',price:'43,900万（起始）',buyer:'待结果',date:'2026-10-15' },
     { city:'长春',type:'待成交',name:'长公资土挂[2026]67号 宽城区北十条棚改【商住·含幼儿园·成本出让】',district:'宽城区',area:'8,563',price:'楼面2,055元/㎡（起始）',buyer:'待结果',date:'2026-10-30' },
+    { city:'长春',type:'待成交',name:'长公资土挂[2026]17号 世港大街西领航路北【商住·≤1.7】',district:'九台区',area:'14,282',price:'1,466万（楼面604元/㎡起始）',buyer:'结果未公布（5/14截止·待核实）',date:'2026-05-14' },
   ];
 
   return rawData.map(d => ({ id: generateId(), ...d }));
