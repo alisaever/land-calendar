@@ -384,7 +384,7 @@ body {
 <!-- ===== 头部 ===== -->
 <div class="header">
   <h1>🏙️ 东北三城土地市场日历</h1>
-  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.26</span></div>
+  <div class="subtitle">沈阳 · 大连 · 长春 — 住宅/商住/法拍土地信息追踪 | 数据来源：自然资源部土地市场网 &amp; 各市公共资源交易平台 &amp; 京东/阿里司法拍卖 <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v2.27</span></div>
       <div class="update-time" id="updateTime">⏱ 数据加载中...</div>
 </div>
 
@@ -529,7 +529,7 @@ body {
 // ===== 全局状态 =====
 const STORAGE_KEY = 'land_calendar_events';
 const UPDATE_TIME_KEY = 'land_calendar_last_update';
-const DATA_VERSION = 28;  // 递增此数字可强制所有设备刷新数据
+const DATA_VERSION = 29;  // 递增此数字可强制所有设备刷新数据
 const VERSION_KEY = 'land_calendar_data_version';
 
 function updateTimeDisplay() {
@@ -1101,7 +1101,7 @@ function clearAllData() {
 
 // ===== 真实数据（仅住宅/商住/法拍 | 逐条核实竞得人、面积、日期 | 数据采集日：2026-07-28） =====
 function getRealData() {
-  // v2.26·11/23刷新：长春净月70号流拍(无企业报名) | 沈阳北陵农场二期东11/23截牌结果未出 | 大连枣园/中革村11/26截牌待拍 | 长春九台区新挂牌商业用地剔除、德惠县级市宅地不收录
+  // v2.27·11/26刷新：沈阳北陵农场二期东成交(金垣18,645万·楼面5,061元/㎡底价) | 大连枣园/中革村11/26截牌结果未出 | 长春宽城66/67号仍无公示
   const rawData = [
     // ========== 沈阳 ==========
     // --- 北陵农场三期（沈土挂[2025]13号·公告12/26）---
@@ -1168,7 +1168,7 @@ function getRealData() {
     { city:'沈阳',type:'成交',name:'SYTJ202606008 祝科街东文欣苑北-1【王家湾·≤2.0】',district:'浑南区',area:'36,249',price:'26,788万（楼面3,695元/㎡底价）',buyer:'沈阳新屹置业有限公司（浑南国资）',date:'2026-09-15' },
     { city:'沈阳',type:'成交',name:'SYTJ202604003 北陵农场二期西【首府新区·地铁6号线西窑站·≤1.7·金垣】',district:'皇姑区',area:'29,719',price:'25,766万（楼面5,100元/㎡·溢价0.79%）',buyer:'沈阳金垣置业有限公司',date:'2026-10-19' },
     { city:'沈阳',type:'成交',name:'SYTJ202608011 蒲丰路南-4【沈北七星大街东·R2·≤1.2·荣信】',district:'沈北新区',area:'47,007',price:'14,316万（楼面2,538元/㎡底价）',buyer:'沈阳荣信恒达商业房地产开发有限公司（荣信集团）',date:'2026-11-02' },
-    { city:'沈阳',type:'待成交',name:'SYTJ202604004 北陵农场二期东【首府新区·地铁6号线西窑站·≤1.6】',district:'皇姑区',area:'23,025',price:'楼面5,061元/㎡（起始）',buyer:'待结果',date:'2026-11-23' },
+    { city:'沈阳',type:'成交',name:'SYTJ202604004 北陵农场二期东【首府新区·地铁6号线西窑站·≤1.6·金垣】',district:'皇姑区',area:'23,025',price:'18,645万（楼面5,061元/㎡底价）',buyer:'沈阳金垣置业有限公司',date:'2026-11-23' },
     { city:'沈阳',type:'待成交',name:'SYTJ202606025 美园东路南绮霞街西-1【浑南·R2·≤1.2】',district:'浑南区',area:'25,098',price:'18,748万（起始）',buyer:'待结果',date:'2026-12-03' },
     { city:'沈阳',type:'待成交',name:'SYTJ202606021 白塔河二路南沈中大街东【浑南·R2·≤1.6】',district:'浑南区',area:'47,123',price:'45,238万（起始）',buyer:'待结果',date:'2026-12-02' },
     { city:'沈阳',type:'成交',name:'SYTJ202605002 轩兴四路北-1-3【大东望花低密·≤1.4·龙湖】',district:'大东区',area:'65,298',price:'42,417万（楼面4,640元/㎡底价）',buyer:'沈阳恒永置业有限公司（龙湖）',date:'2026-09-30' },
